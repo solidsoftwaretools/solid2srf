@@ -115,8 +115,6 @@ ZTR_DataCompressionRaw::compressAndByteOrder(
 {
     // raw = no compression
     ZTR_Type type = theChunk->getDataType();
-    int bytesInType = ZTR_TypeNumberOfByte( type );
-    int dataLength = compressedData->length();
 
     if ( type == ZTR_TypeString )
     {
@@ -175,9 +173,14 @@ ZTR_DataCompressionRaw::compressAndByteOrder(
 
         while( it < dataFloatVec.end() )
         {
-             float fvalue = *it;
-             uint32_t value = *(reinterpret_cast<uint32_t *>(&fvalue));
-             value = ZTR_ByteSwapAsRequired_4( value );
+             typedef union
+             {
+                 float f;
+                 uint32_t i;
+             } ZTR_floatToIntU;
+             ZTR_floatToIntU conv;
+             conv.f = *it;
+             uint32_t value = ZTR_ByteSwapAsRequired_4( conv.i );
              compressedData->append(
                             reinterpret_cast<const char*>(&value), 4 );
              it++;

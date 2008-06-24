@@ -45,7 +45,7 @@ ZTR_MetadataList::extract( const std::string& data )
     }
 
     metadata.clear();
-    int ii = 0;
+    unsigned int ii = 0;
     while ( ii < v.size() )
     {
         metadata.insert( std::pair<std::string, std::string>(v[ii], v[ii+1] ));

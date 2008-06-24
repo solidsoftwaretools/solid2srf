@@ -8,6 +8,7 @@
 #include <SRF_SOLiDsingleEndWriter.hh>
 #include <SRF_SOLiDpairedEndWriter.hh>
 
+int
 main(int argc, char **argv)
 {
     SRF_CommandLineArgs args;

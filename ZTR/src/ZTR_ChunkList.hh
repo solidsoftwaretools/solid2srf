@@ -19,7 +19,7 @@ class ZTR_ChunkList
         bool extract( const std::string& data );
 
         bool addChunk( ABANDON ZTR_Chunk* chunk);
-        bool getChunk( int pos, const ZTR_Chunk* chunk ) const;
+        bool getChunk( unsigned int pos, const ZTR_Chunk* chunk ) const;
         int numChunks( void ) const;
 
         bool packForZTR( std::string* packedBlob ) const;

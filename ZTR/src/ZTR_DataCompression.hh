@@ -21,7 +21,7 @@ class ZTR_DataCompression
 {
     public:
         ZTR_DataCompression( void );
-        ~ZTR_DataCompression( void );
+        virtual ~ZTR_DataCompression( void );
 
         virtual bool byteOrderAndUncompress(
                                     const std::string& compressedData,

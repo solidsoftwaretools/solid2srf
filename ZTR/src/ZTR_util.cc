@@ -18,9 +18,9 @@ const std::string
 ZTR_Header( void )
 {
     std::string header = ZTR_MAGIC_NUMBER;
-    uint8_t major = 2;
+    uint8_t major = 1;
     header.append( reinterpret_cast<const char *>(&major), 1 );
-    uint8_t minor = 0;
+    uint8_t minor = 4;
     header.append( reinterpret_cast<const char *>(&minor), 1 );
 
     return header;

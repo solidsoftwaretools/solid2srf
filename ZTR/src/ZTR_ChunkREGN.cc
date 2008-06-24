@@ -150,7 +150,7 @@ ZTR_ChunkREGN::constructRegnNameList( std::string* regnNameList ) const
         return FALSE;
     }
 
-    int ii = 0;
+    unsigned int ii = 0;
     while ( ii < codes.size() )
     {
         *regnNameList += names[ii] + ':' + codesToChar( codes[ii] );

@@ -8,6 +8,7 @@
 #define ZTR_MAGIC_NUMBER "\256ZTR\r\n\032\n"
 #define ZTR_VERSION_1_3 1.3
 #define ZTR_VERSION_2_0 2.0
+#define ZTR_VERSION_1_4 1.4
 #define ZTR_VERSION_MAJOR 2
 #define ZTR_VERSION_MINOR 0
 
@@ -56,7 +57,7 @@ ZTR_ChunkList::extract( const std::string& data )
     inputData.read( reinterpret_cast<char *>(&minor), 1 );
 
     float version = ( (float) major ) + ( ((float) minor) / 10.0 );
-    if ( version < ZTR_VERSION_2_0 )
+    if ( version > ZTR_VERSION_1_4 )
     {
         ZTR_ReportError( "ZTR Version not supported" );
         return FALSE;
@@ -81,7 +82,7 @@ ZTR_ChunkList::extract( const std::string& data )
 }
 
 bool
-ZTR_ChunkList::getChunk( int pos,
+ZTR_ChunkList::getChunk( unsigned int pos,
                          const ZTR_Chunk* chunk ) const
 {
     if ( pos >= chunks.size() )
