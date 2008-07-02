@@ -22,6 +22,12 @@ ZTR_ChunkSAMP::type( void ) const
     return ZTR_ChunkTypeSAMP;
 }
 
+bool
+ZTR_ChunkSAMP::chunkDataPadded( void ) const
+{
+    return TRUE;
+}
+
 ZTR_Type
 ZTR_ChunkSAMP::defaultDataType( void ) const
 {

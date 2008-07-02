@@ -91,6 +91,17 @@ ZTR_Chunk::initialize( std::istream& inputData )
     char formatAsChar;
     inputData.read( &formatAsChar, 1 );
     dataLength--; // to account for format byte read
+    if ( chunkDataPadded() )
+    {
+        int padBytes = ZTR_TypeNumberOfByte( getDataType() ) - 1;
+        if ( padBytes > 0 )
+        {
+            char* bufNull = new char[4];
+            inputData.read( bufNull, padBytes );
+            dataLength -= padBytes;
+            DELETE_ARRAY( bufNull );
+        }
+    }
 
     char* dataBuffer = new char[dataLength];
     inputData.read( dataBuffer, dataLength );
@@ -162,13 +173,26 @@ ZTR_Chunk::readyData( const ZTR_DataCompression* compressionScheme )
         return FALSE;
     }
 
-    int compressedDataLength = compressedData.length() + 1;
+    int padBytes = 0;
+    if ( chunkDataPadded() )
+    {
+        int bytesInType = ZTR_TypeNumberOfByte( getDataType() );
+        padBytes = bytesInType - 1;
+    }
+
+    // compressed length = length + format + pad bytes
+    int compressedDataLength = compressedData.length() + 1 + padBytes;
     compressedDataLength = ZTR_ByteSwapAsRequired_4( compressedDataLength );
 
     int format = ZTR_DataCompressionTypeToFormat(
                      compressionScheme->getDataCompressionType() );
     data.append( reinterpret_cast<const char*>(&compressedDataLength), 4 );
     data.append( reinterpret_cast<const char*>(&format), 1 );
+    if ( padBytes > 0 )
+    {
+        char nul = '\0';
+        data.append( padBytes, nul );
+    }
     data.append( compressedData );
 
     return TRUE;
@@ -208,6 +232,12 @@ ZTR_ChunkType
 ZTR_Chunk::type( void ) const
 {
     return ZTR_ChunkTypeNone;
+}
+
+bool
+ZTR_Chunk::chunkDataPadded( void ) const
+{
+    return FALSE;
 }
 
 void

@@ -43,6 +43,7 @@ class ZTR_Chunk
        const std::vector<float>& getUncompressedDataFloat( void ) const;
 
        virtual ZTR_ChunkType type( void ) const;
+       virtual bool chunkDataPadded( void ) const;
 
        virtual void dump( void ) const;
 

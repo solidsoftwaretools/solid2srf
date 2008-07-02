@@ -21,6 +21,7 @@ class ZTR_ChunkSAMP : public ZTR_Chunk
                     ZTR_Type type = ZTR_Type32bitFloat );
 
         virtual ZTR_ChunkType type( void ) const;
+        virtual bool chunkDataPadded( void ) const;
 
         virtual void dump( void ) const;
 

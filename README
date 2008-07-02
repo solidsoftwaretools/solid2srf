@@ -1,0 +1,51 @@
+SOLiD2SRF CONVERSION TOOL
+
+This software takes SOLiD data as input and creates an SRF file.
+
+BUILDING
+
+At the console type
+1) ./configure
+2) make
+
+Programs built are
+SRF/writer/SRF_WriteGenSOLiD
+SRF/reader/SRF_Reader
+SRF/reader/SRF_ZtrReader
+
+APPLICATIONS
+
+SRF_Reader <output file> - dumps the contents of the SRF file. It does not dump the contents of the ZTR chunks.
+SRF_ZtrReader <output file> - dumps the contents of the SRF file. It also dumps the contents of the ZTR chunks.
+
+SRF_WriteGenSOLiD –cf <cfasta file> -o <output file> -t <title> 
+-q <quality file> -i <intensity file root> -x <xml file> 
+-cf2 <second cfasta file> -q2 <second quality file> -i2 <second intensity file root> 
+-noABprefix –noPrimerBaseInREGN  -to
+
+Mandatory Arguments:
+ -cf <cfasta file> 		: specifies the cfasta file. This is the first of two such files for a paired end dataset. 
+-o <output file> 		: the output file. If the file already exists, it is overwritten. 
+-t <title> 		: used to as a prefix to the read id. If the title is specified in the comment lines of the 
+cfasta file, the two must match unless the –to argument is specified. Note: if the title is not specified in the file, the –
+to argument becomes mandatory as well. 
+Additional data files (any combination permitted): 
+-q <quality file>  		: specifies the quality file. This is the first of two such files for a paired end dataset. 
+-i <intensity file root> 	: Base name of the intensity files. The application appends [CY3|CY5|TXR|FTC].fasta to 
+find the four intensity files. This is the first of two such sets of files for a paired end dataset. 
+-x <xml file>  		: specifies an XML file for inclusion in the SRF XML block. The file contents are copied 
+verbatim. 
+Second set of data files to support paired end datasets. The combination must match those of the first set e.g. if a 
+quality file is given for the first set, it must also be provided for the second:
+-cf2 <cfasta file>  
+-q2 <quality file> 
+-i2 <intensity file root> 
+Additional switches: 
+-noABprefix		: This switch removes the VAB_ prefix to the read id. Note: use of this switch may render 
+the resulting file in violation of the SRF specification.  
+-noPrimerBaseInREGN	: By default, the last base of the primer is added to the REGN field for ~5-6% saving in file 
+size. If this switch is specified, the last base of the primer is prepended to the sequence. This base is given a quality 
+of 255 and an intensity of -1.0. 
+-to			: Title override. The title specified in the –t argument does not have to match the title 
+specified in the data files when this switch is set. 
+
