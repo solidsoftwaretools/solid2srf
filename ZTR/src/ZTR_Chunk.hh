@@ -7,6 +7,7 @@
 //
 #include <string>
 #include <ZTR_util.hh>
+#include <ZTR_Types.hh>
 #include <ZTR_DataCompression.hh>
 #include <ZTR_MetadataList.hh>
 
@@ -33,6 +34,7 @@ class ZTR_Chunk
         ZTR_Type getDataType( void ) const;
 
         ZTR_MetadataList* getMetadata( void );
+        const ZTR_MetadataList* getMetadataConst( void ) const;
 
        void setUncompressedDataStr( const std::string& dataStrIn );
        void setUncompressedDataInt( const std::vector<int>& dataIntIn );
@@ -41,6 +43,8 @@ class ZTR_Chunk
        const std::string& getUncompressedDataStr( void ) const;
        const std::vector<int>& getUncompressedDataInt( void ) const;
        const std::vector<float>& getUncompressedDataFloat( void ) const;
+
+       const ZTR_Data& getAssignedData( void ) const;
 
        virtual ZTR_ChunkType type( void ) const;
        virtual bool chunkDataPadded( void ) const;
@@ -55,10 +59,9 @@ class ZTR_Chunk
         ZTR_MetadataList metadata;
         std::string data; // full chunk, type, metadata and format byte included
                           // not set until readyData called
+
         // one of these three vectors is filled with data
-        std::string uncompressedDataStr;
-        std::vector<int> uncompressedDataInt;
-        std::vector<float> uncompressedDataFloat;
+        ZTR_Data assignedData;
 };
 
 ZTR_ChunkType

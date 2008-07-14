@@ -23,6 +23,8 @@ class ZTR_MetadataList
 
         bool packForZTR( std::string* packedMetadata ) const;
 
+        bool filter( const ZTR_MetadataList& filterAgainst ) const;
+
         ZTR_Type type( void ) const;
 
         void dump( void ) const;

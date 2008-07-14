@@ -177,7 +177,7 @@ SRF_WriteGenSOLiD_SOURCES = \
                             SRF_SOLiDpairedEndWriter.cc
 
 SRF_WriteGenSOLiD_LDADD = $(top_builddir)/SRF/base/libsrf.a  $(top_builddir)/ZTR/src/libztr.a @LDFLAGS@ $(LDLIB)
-INCLUDES = -I. -I../base -I../../ZTR/src
+INCLUDES = -I. -I$(top_srcdir)/SRF/base -I$(top_srcdir)/ZTR/src
 LDLIB = -lstdc++
 all: all-am
 
@@ -192,9 +192,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  SRF/writer/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  SRF/writer/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  SRF/writer/Makefile
+	  $(AUTOMAKE) --gnu  SRF/writer/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

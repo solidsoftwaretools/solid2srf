@@ -125,6 +125,8 @@ ZTR_Chunk::initialize( std::istream& inputData )
     }
 
     DELETE( compression );
+
+    assignedData.type = this->getDataType();
     return TRUE;
 }
 
@@ -228,6 +230,12 @@ ZTR_Chunk::getMetadata( void )
     return &metadata;
 }
 
+const ZTR_MetadataList*
+ZTR_Chunk::getMetadataConst( void ) const
+{
+    return &metadata;
+}
+
 ZTR_ChunkType
 ZTR_Chunk::type( void ) const
 {
@@ -243,38 +251,38 @@ ZTR_Chunk::chunkDataPadded( void ) const
 void
 ZTR_Chunk::setUncompressedDataStr( const std::string& dataStrIn )
 {
-    uncompressedDataStr = dataStrIn;
+    assignedData.dataString = dataStrIn;
 }
 
 void
 ZTR_Chunk::setUncompressedDataInt( const std::vector<int>& dataIntIn )
 {
-    uncompressedDataInt = dataIntIn;
+    assignedData.ints = dataIntIn;
 }
 
 void
 ZTR_Chunk::setUncompressedDataFloat( const std::vector<float>& dataFloatIn )
 {
-    uncompressedDataFloat = dataFloatIn;
+    assignedData.floats = dataFloatIn;
 }
 
 
 const std::string&
 ZTR_Chunk::getUncompressedDataStr( void ) const
 {
-    return uncompressedDataStr;
+    return assignedData.dataString;
 }
 
 const std::vector<int>&
 ZTR_Chunk::getUncompressedDataInt( void ) const
 {
-    return uncompressedDataInt;
+    return assignedData.ints;
 }
 
 const std::vector<float>&
 ZTR_Chunk::getUncompressedDataFloat( void ) const
 {
-    return uncompressedDataFloat;
+    return assignedData.floats;
 }
 
 void
@@ -282,3 +290,10 @@ ZTR_Chunk::dump ( void ) const
 {
     metadata.dump();
 }
+
+const ZTR_Data&
+ZTR_Chunk::getAssignedData( void ) const
+{
+    return assignedData;
+}
+

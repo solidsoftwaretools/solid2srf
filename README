@@ -49,3 +49,70 @@ of 255 and an intensity of -1.0.
 -to			: Title override. The title specified in the –t argument does not have to match the title 
 specified in the data files when this switch is set. 
 
+TEST DATA
+
+SINGLE END READ
+
+to generate a single end read SRF file from the test data in testData/data1
+use the following command line from the writer directory
+
+./SRF_WriteGenSOLiD -cf ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3.csfasta -o testSingleEnd.srf -t testData -to -i ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_intensity.Scaled -q ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_QV.qual
+
+the output file can be dumped using
+SRF_Reader
+SRF_ZtrReader
+
+to create the original files use
+./SRF_FastLikeConverter ../writer/testSingleEnd.srf outputS.cfasta FALSE 12 FALSE
+./SRF_FastLikeConverter ../writer/testSingleEnd.srf outputS.qual FALSE 12 FALSE CNF1
+./SRF_FastLikeConverter ../writer/testSingleEnd.srf outputS.i.ftc FALSE 12 FALSE SAMP TYPE=0FAM
+./SRF_FastLikeConverter ../writer/testSingleEnd.srf outputS.i.cy3 FALSE 12 FALSE SAMP TYPE=1CY3
+./SRF_FastLikeConverter ../writer/testSingleEnd.srf outputS.i.txr FALSE 12 FALSE SAMP TYPE=2TXR
+./SRF_FastLikeConverter ../writer/testSingleEnd.srf outputS.i.cy5 FALSE 12 FALSE SAMP TYPE=3CY5
+
+the input and output can be compared with the following commands
+diff outputS.cfasta ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3.csfasta 
+diff outputS.qual ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_QV.qual
+diff outputS.i.ftc ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_intensity.ScaledFTC.fasta
+diff outputS.i.cy3 ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_intensity.ScaledCY3.fasta
+diff outputS.i.txr ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_intensity.ScaledTXR.fasta
+diff outputS.i.cy5 ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_intensity.ScaledCY5.fasta
+
+
+PAIRED END READ DATA
+
+to generate a paired end read SRF file from the test data in testData/data1 and
+testData/data2 use the following command line from the writer directory
+
+./SRF_WriteGenSOLiD -cf ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3.csfasta -o testPairedEnd.srf -t testData -to -i ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_intensity.Scaled -q ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_QV.qual -cf2 ../../testData/data2/DAEMON20070522_MATES_1_Sample2_R3.csfasta -q2 ../../testData/data2/DAEMON20070522_MATES_1_Sample2_R3_QV.qual -i2 ../../testData/data2/DAEMON20070522_MATES_1_Sample2_R3_intensity.Scaled
+
+the output file can be dumped using
+SRF_Reader
+SRF_ZtrReader
+
+to create the original files use
+
+
+./SRF_FastLikeConverter ../writer/testPairedEnd.srf outputP.cfasta TRUE 12 TRUE
+./SRF_FastLikeConverter ../writer/testPairedEnd.srf outputP.qual TRUE 12 TRUE CNF1
+./SRF_FastLikeConverter ../writer/testPairedEnd.srf outputP.i.ftc TRUE 12 TRUE SAMP TYPE=0FAM
+./SRF_FastLikeConverter ../writer/testPairedEnd.srf outputP.i.cy3 TRUE 12 TRUE SAMP TYPE=1CY3
+./SRF_FastLikeConverter ../writer/testPairedEnd.srf outputP.i.txr TRUE 12 TRUE SAMP TYPE=2TXR
+./SRF_FastLikeConverter ../writer/testPairedEnd.srf outputP.i.cy5 TRUE 12 TRUE SAMP TYPE=3CY5
+
+the input and output can be compared with the following commands
+
+diff outputP.cfasta.1 ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3.csfasta 
+diff outputP.qual.1 ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_QV.qual
+diff outputP.i.ftc.1 ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_intensity.ScaledFTC.fasta
+diff outputP.i.cy3.1 ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_intensity.ScaledCY3.fasta
+diff outputP.i.txr.1 ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_intensity.ScaledTXR.fasta
+diff outputP.i.cy5.1 ../../testData/data1/DAEMON20070522_MATES_1_Sample2_F3_intensity.ScaledCY5.fasta
+
+diff outputP.cfasta.2 ../../testData/data2/DAEMON20070522_MATES_1_Sample2_R3.csfasta
+diff outputP.qual.2 ../../testData/data2/DAEMON20070522_MATES_1_Sample2_R3_QV.qual
+diff outputP.i.ftc.2 ../../testData/data2/DAEMON20070522_MATES_1_Sample2_R3_intensity.ScaledFTC.fasta
+diff outputP.i.cy3.2 ../../testData/data2/DAEMON20070522_MATES_1_Sample2_R3_intensity.ScaledCY3.fasta
+diff outputP.i.txr.2 ../../testData/data2/DAEMON20070522_MATES_1_Sample2_R3_intensity.ScaledTXR.fasta
+diff outputP.i.cy5.2 ../../testData/data2/DAEMON20070522_MATES_1_Sample2_R3_intensity.ScaledCY5.fasta
+

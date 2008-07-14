@@ -64,7 +64,7 @@ am_libztr_a_OBJECTS = ZTR_ChunkREGN.$(OBJEXT) ZTR_ChunkSAMP.$(OBJEXT) \
 	ZTR_ChunkBase.$(OBJEXT) ZTR_Chunk.$(OBJEXT) \
 	ZTR_DataCompression.$(OBJEXT) ZTR_DataCompressionRaw.$(OBJEXT) \
 	ZTR_MetadataList.$(OBJEXT) ZTR_Types.$(OBJEXT) \
-	ZTR_util.$(OBJEXT)
+	ZTR_util.$(OBJEXT) ZTR_RetrieveChunk.$(OBJEXT)
 libztr_a_OBJECTS = $(am_libztr_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -185,9 +185,11 @@ libztr_a_SOURCES = \
         ZTR_Types.hh \
         ZTR_Types.cc \
         ZTR_util.hh \
-        ZTR_util.cc
+        ZTR_util.cc \
+        ZTR_RetrieveChunk.hh \
+        ZTR_RetrieveChunk.cc
 
-INCLUDES = -I. -I../..
+INCLUDES = -I. -I$(top_srcdir)
 all: all-am
 
 .SUFFIXES:
@@ -201,9 +203,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  ZTR/src/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  ZTR/src/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  ZTR/src/Makefile
+	  $(AUTOMAKE) --gnu  ZTR/src/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -270,6 +272,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ZTR_DataCompression.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ZTR_DataCompressionRaw.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ZTR_MetadataList.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ZTR_RetrieveChunk.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ZTR_Types.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ZTR_util.Po@am__quote@
 

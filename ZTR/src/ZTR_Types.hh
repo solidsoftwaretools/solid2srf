@@ -6,6 +6,7 @@
 #define ZTR_TYPES_HH
 //
 #include <string>
+#include <vector>
 
 typedef enum
 {
@@ -17,6 +18,16 @@ typedef enum
     ZTR_Type16bitFloat,
     ZTR_Type32bitFloat
 } ZTR_Type;
+
+typedef struct
+{
+    ZTR_Type type;
+
+    // only one of the following data types will be populated
+    std::vector<int> ints; 
+    std::vector<float> floats; 
+    std::string dataString; 
+} ZTR_Data;
 
 #define ZTR_TYPE_32BIT_FLOAT "32 bit IEEE float"
 #define ZTR_TYPE_16BIT_INT "16 bit integer"

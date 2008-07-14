@@ -9,6 +9,7 @@ libsrf_a_SOURCES = \
         SRF_Read.cc \
         SRF_DataBlockHeader.hh \
         SRF_DataBlockHeader.cc \
+        SRF_IndexBlock.hh \
         SRF_Block.hh \
         SRF_Block.cc \
         SRF_XMLBlock.hh \
@@ -18,5 +19,5 @@ libsrf_a_SOURCES = \
         SRF_util.hh \
         SRF_util.cc
 
-INCLUDES= -I. -I../..
+INCLUDES= -I. -I$(top_srcdir)
 

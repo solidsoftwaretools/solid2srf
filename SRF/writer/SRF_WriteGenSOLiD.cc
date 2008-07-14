@@ -84,6 +84,6 @@ main(int argc, char **argv)
 
     delete writer;
 
-    return 0;
+    exit( 0 );
 }
 

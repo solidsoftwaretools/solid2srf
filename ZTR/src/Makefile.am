@@ -22,7 +22,9 @@ libztr_a_SOURCES = \
         ZTR_Types.hh \
         ZTR_Types.cc \
         ZTR_util.hh \
-        ZTR_util.cc
+        ZTR_util.cc \
+        ZTR_RetrieveChunk.hh \
+        ZTR_RetrieveChunk.cc
 
-INCLUDES= -I. -I../..
+INCLUDES= -I. -I$(top_srcdir)
 

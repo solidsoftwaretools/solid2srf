@@ -143,3 +143,30 @@ ZTR_MetadataList::type( void ) const
     } 
     return ZTR_TypeNone;
 }
+
+bool
+ZTR_MetadataList::filter( const ZTR_MetadataList& filterAgainst ) const
+{
+    std::map<std::string, std::string>::const_iterator it;
+    it = metadata.begin();
+
+    while( it != metadata.end() )
+    {
+        std::string keyIn = (*it).first;
+        std::string valueIn = (*it).second;
+        std::string valueOut;
+
+        if ( !filterAgainst.getMetadata( keyIn, &valueOut ) )
+        {
+            return FALSE;
+        }
+        if ( valueIn != valueOut )
+        {
+            return FALSE;
+        }
+
+        it++;
+    }
+
+    return TRUE;
+}

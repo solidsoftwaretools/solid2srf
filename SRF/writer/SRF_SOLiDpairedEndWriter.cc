@@ -264,13 +264,22 @@ SRF_SOLiDpairedEndWriter::insertDummy(
     // and end of the file
 
     int dummyInsertSetCopyRow = 1;
+    int copySizeCalls = 0;
     if ( dummyInsertSet.size() > 1 )
     {
         dummyInsertSetCopyRow = 1;
+        copySizeCalls = dummyInsertSet[dummyInsertSetCopyRow].calls.size();
     }
     else if ( dummyInsertSet.size() == 1 )
     {
         dummyInsertSetCopyRow = 0;
+        copySizeCalls = dummyInsertSet[dummyInsertSetCopyRow].calls.size();
+        // if using a REGN block this line will already have been processed
+        // and had one base removed so need to add one
+       if ( !args.flagSet( SRF_ARGS_NO_PRIMER_BASE_IN_REGN ) )
+       {
+           copySizeCalls++;
+       }
     }
     else
     {
@@ -284,7 +293,7 @@ SRF_SOLiDpairedEndWriter::insertDummy(
     dummy.readIdSuffix = goodSet[1].readIdSuffix;
 
     dummy.calls.insert( dummy.calls.begin(),
-                        dummyInsertSet[dummyInsertSetCopyRow].calls.size(),
+                        copySizeCalls,
                         '.' );
 
     if ( dummyInsertSet[dummyInsertSetCopyRow].confValues.size() > 0 )
@@ -361,9 +370,9 @@ SRF_SOLiDpairedEndWriter::createRegnChunk( std::string& blob )
         codes.push_back( ZTR_REGNtypesPaired );
 
         boundaries.push_back( 0 );
-        boundaries.push_back( dataSetsFile1[1].calls.length() );
-        boundaries.push_back( dataSetsFile1[1].calls.length() ); // same
-                                                                 // boundary
+        boundaries.push_back( dataSetsFile1[1].calls.length() - 1);
+        boundaries.push_back( dataSetsFile1[1].calls.length() - 1); // same
+                                                                    // boundary
     }
 
     return ( SRF_SOLiDWriter::createRegnChunk( names, codes, boundaries, blob));
@@ -519,7 +528,7 @@ SRF_SOLiDpairedEndWriter::writeDB( void )
     SRF_DataBlock dataBlock;
     // remove the characters following the last underscore
     int find = dataSetsFile1[1].readIdSuffix.find_last_of('_');
-    std::string readId = dataSetsFile1[1].readIdSuffix.substr( 0, find - 1 );
+    std::string readId = dataSetsFile1[1].readIdSuffix.substr( 0, find );
     if ( !dataBlock.setup( readId, blob ) )
     {
         std::cout << "ERROR: Writer can't set up DB at Read Id:" <<

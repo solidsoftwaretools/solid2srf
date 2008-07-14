@@ -2,4 +2,5 @@
 
 aclocal
 automake --add-missing --foreign --copy
-autoconf
+#autoconf
+autoreconf

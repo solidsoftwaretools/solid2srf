@@ -21,10 +21,12 @@ class ZTR_ChunkList
         bool addChunk( ABANDON ZTR_Chunk* chunk);
         bool getChunk( unsigned int pos, const ZTR_Chunk* chunk ) const;
         int numChunks( void ) const;
+        const std::vector<ZTR_Chunk*>& getChunkList( void ) const;
 
         bool packForZTR( std::string* packedBlob ) const;
 
         void dump( void ) const;
+        const std::vector<ZTR_Chunk*>& getChunks( void ) const;
 
     protected:
 

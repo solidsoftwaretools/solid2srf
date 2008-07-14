@@ -222,3 +222,16 @@ ZTR_ChunkREGN::dump( void ) const
     std::cout << std::endl;
 }
 
+const std::vector<std::string>&
+ZTR_ChunkREGN::getNames( void ) const
+{
+    return names;
+}
+
+const std::vector<ZTR_REGNtypes>&
+ZTR_ChunkREGN::getCodes( void ) const
+{
+    return codes;
+}
+
+

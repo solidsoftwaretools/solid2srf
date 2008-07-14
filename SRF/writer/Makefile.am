@@ -21,7 +21,7 @@ SRF_WriteGenSOLiD_SOURCES = \
                             SRF_SOLiDpairedEndWriter.cc
 SRF_WriteGenSOLiD_LDADD = $(top_builddir)/SRF/base/libsrf.a  $(top_builddir)/ZTR/src/libztr.a @LDFLAGS@ $(LDLIB)
 
-INCLUDES= -I. -I../base -I../../ZTR/src
+INCLUDES= -I. -I$(top_srcdir)/SRF/base -I$(top_srcdir)/ZTR/src
 
 LDLIB=-lstdc++
 

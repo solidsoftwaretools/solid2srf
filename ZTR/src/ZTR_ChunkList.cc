@@ -6,9 +6,9 @@
 #include <ZTR_util.hh>
 
 #define ZTR_MAGIC_NUMBER "\256ZTR\r\n\032\n"
-#define ZTR_VERSION_1_3 1.3
+#define ZTR_VERSION_1_3 1.30001 // avoid rounding errors
 #define ZTR_VERSION_2_0 2.0
-#define ZTR_VERSION_1_4 1.4
+#define ZTR_VERSION_1_4 1.40001
 #define ZTR_VERSION_MAJOR 2
 #define ZTR_VERSION_MINOR 0
 
@@ -139,5 +139,10 @@ ZTR_ChunkList::numChunks( void ) const
     return chunks.size();
 }
 
+const std::vector<ZTR_Chunk*>&
+ZTR_ChunkList::getChunks( void ) const
+{
+    return chunks;
+}
 
 // TODO add method to allow SRF header body split
