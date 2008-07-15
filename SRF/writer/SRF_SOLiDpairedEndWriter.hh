@@ -29,7 +29,9 @@ class SRF_SOLiDpairedEndWriter : public SRF_SOLiDWriter
         bool writeDB( void );
         bool identifyNextPairToWrite( void );
         void insertDummy( std::vector<SRF_SOLiDdataSet>& dummyInsertSet,
-                          const std::vector<SRF_SOLiDdataSet>& goodSet );
+                          const std::vector<SRF_SOLiDdataSet>& goodSet,
+                          char lastPrimerBase,
+                          const std::string& suffix );
         bool createRegnChunk( std::string& blob );
         void modifyDataByREGNBlockContent( void );
 
@@ -41,6 +43,11 @@ class SRF_SOLiDpairedEndWriter : public SRF_SOLiDWriter
 
        std::vector<SRF_SOLiDdataSet> dataSetsFile1;
        std::vector<SRF_SOLiDdataSet> dataSetsFile2;
+
+       char lastPrimerBase1;
+       char lastPrimerBase2;
+       std::string suffix1;
+       std::string suffix2;
 };
 
 #endif

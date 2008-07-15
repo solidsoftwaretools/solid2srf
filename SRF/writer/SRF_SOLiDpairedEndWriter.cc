@@ -187,9 +187,17 @@ SRF_SOLiDpairedEndWriter::identifyNextPairToWrite( void )
         std::istringstream partialReadId2( trPartialReadId2 );
 
         int panelId1, panelId2, x1, x2, y1, y2;
-        std::string suffix1, suffix2;
-        partialReadId1 >> panelId1 >> x1 >> y1 >> suffix1;
-        partialReadId2 >> panelId2 >> x2 >> y2 >> suffix2;
+        std::string extra1, extra2;
+        partialReadId1 >> panelId1 >> x1 >> y1 >> extra1;
+        partialReadId2 >> panelId2 >> x2 >> y2 >> extra2;
+
+        // construct correct suffixes in case dummies are required
+        std::ostringstream osuffix1( "" );
+        std::ostringstream osuffix2( "" );
+        osuffix1 << x2 << '_' << y2 << '_' << extra1;
+        osuffix2 << x1 << '_' << y1 << '_' << extra2;
+        suffix1 = osuffix1.str();
+        suffix2 = osuffix2.str();
 
         if ( panelId1 == panelId2 )
         {
@@ -237,11 +245,11 @@ SRF_SOLiDpairedEndWriter::identifyNextPairToWrite( void )
  
     if ( dummyOn1 )
     {
-        insertDummy( dataSetsFile1, dataSetsFile2 );
+        insertDummy( dataSetsFile1, dataSetsFile2, lastPrimerBase1, suffix1 );
     }
     else
     {
-        insertDummy( dataSetsFile2, dataSetsFile1 );
+        insertDummy( dataSetsFile2, dataSetsFile1, lastPrimerBase2, suffix2 );
     }
 
     return TRUE;
@@ -250,7 +258,9 @@ SRF_SOLiDpairedEndWriter::identifyNextPairToWrite( void )
 void
 SRF_SOLiDpairedEndWriter::insertDummy(
                              std::vector<SRF_SOLiDdataSet>& dummyInsertSet,
-                       const std::vector<SRF_SOLiDdataSet>& goodSet )
+                       const std::vector<SRF_SOLiDdataSet>& goodSet,
+                             char lastPrimerBase,
+                       const std::string& suffix )
 {
     // have to insert a dummy SRF_SOLiDdataSet object into one set
     // to account for a missing read
@@ -265,15 +275,23 @@ SRF_SOLiDpairedEndWriter::insertDummy(
 
     int dummyInsertSetCopyRow = 1;
     int copySizeCalls = 0;
+    // if reads are missing at panel start must get the first base
+    char firstBase = '\0';
     if ( dummyInsertSet.size() > 1 )
     {
         dummyInsertSetCopyRow = 1;
-        copySizeCalls = dummyInsertSet[dummyInsertSetCopyRow].calls.size();
+        // 1 substracted from copySize calls because primer base will be
+        // prepended
+        copySizeCalls = dummyInsertSet[dummyInsertSetCopyRow].calls.size() - 1;
+        firstBase = dummyInsertSet[dummyInsertSetCopyRow].calls[0];
     }
     else if ( dummyInsertSet.size() == 1 )
     {
+        // this is the case where we have run out of data
+        // set copy row to the last row processed
         dummyInsertSetCopyRow = 0;
-        copySizeCalls = dummyInsertSet[dummyInsertSetCopyRow].calls.size();
+        copySizeCalls = dummyInsertSet[dummyInsertSetCopyRow].calls.size() - 1;
+        firstBase = lastPrimerBase;
         // if using a REGN block this line will already have been processed
         // and had one base removed so need to add one
        if ( !args.flagSet( SRF_ARGS_NO_PRIMER_BASE_IN_REGN ) )
@@ -290,16 +308,17 @@ SRF_SOLiDpairedEndWriter::insertDummy(
     SRF_SOLiDdataSet dummy;
     dummy.partialReadId = goodSet[1].partialReadId;
     dummy.panelId = goodSet[1].panelId;
-    dummy.readIdSuffix = goodSet[1].readIdSuffix;
+    dummy.readIdSuffix = suffix;
 
-    dummy.calls.insert( dummy.calls.begin(),
+    dummy.calls.push_back( firstBase );
+    dummy.calls.insert( dummy.calls.end(),
                         copySizeCalls,
                         '.' );
 
     if ( dummyInsertSet[dummyInsertSetCopyRow].confValues.size() > 0 )
     {
         dummy.confValues.insert( dummy.confValues.begin(),
-                                 dummyInsertSet[dummyInsertSetCopyRow].confValues.size(), 
+                                 copySizeCalls, 
                                  0 );
     }
 
@@ -308,7 +327,7 @@ SRF_SOLiDpairedEndWriter::insertDummy(
         SRF_IntensityData dummyIntensityData;
         dummyIntensityData.intensityValues.insert(
                     dummyIntensityData.intensityValues.begin(),
-                    dummyInsertSet[dummyInsertSetCopyRow].intensityData[0].intensityValues.size(),
+                    copySizeCalls,
                     -1.0 );
 
         dummyIntensityData.sampName =
@@ -415,6 +434,8 @@ SRF_SOLiDpairedEndWriter::writeDBH( void )
 void
 SRF_SOLiDpairedEndWriter::modifyDataByREGNBlockContent( void )
 {
+    lastPrimerBase1 = dataSetsFile1[1].calls[0];
+    lastPrimerBase2 = dataSetsFile2[1].calls[0];
     // delete insert data depending on whats in the REGN block
     if ( args.flagSet( SRF_ARGS_NO_PRIMER_BASE_IN_REGN ) )
     {

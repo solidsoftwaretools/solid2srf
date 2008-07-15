@@ -179,9 +179,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  SRF/reader/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  SRF/reader/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  SRF/reader/Makefile
+	  $(AUTOMAKE) --foreign  SRF/reader/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

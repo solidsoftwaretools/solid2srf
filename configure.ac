@@ -4,18 +4,27 @@ AC_INIT(solid2srf, 0.6.5)
 AM_CONFIG_HEADER(srf_config.h)
 AM_INIT_AUTOMAKE
 
+dnl AX_CFLAGS_WARN_ALL_ANSI
+dnl FLAGS must be set before CC and CXX macros
+dnl This respects user settings, but provides a good default if none specified
+test_CFLAGS=${CFLAGS+set}
+if test "$test_CFLAGS" != set; then
+    CFLAGS="-g -O2 -Wall -Wstrict-aliasing=2"
+fi
+test_CXXFLAGS=${CXXFLAGS+set}
+if test "$test_CXXFLAGS" != set; then
+    CXXFLAGS="$CFLAGS $CXXFLAGS"
+fi
+export CFLAGS CXXFLAGS
+
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
-#AC_SUBST( CXXFLAGS, "-O2 -g -ffast-math -Wall -Wstrict-aliasing=2")
 
 dnl Checks for libraries
-
-dnl AX_CFLAGS_WARN_ALL_ANSI
-CXXFLAGS="$CFLAGS $CXXFLAGS -ffast-math -Wall -Wstrict-aliasing=2"
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -27,14 +36,11 @@ AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(short,2)
 AC_CHECK_SIZEOF(int,4)
 AC_CHECK_SIZEOF(long,4)
-dnl AC_C_CONST
 AC_C_INLINE
 AC_TYPE_MODE_T
 dnl AC_TYPE_OFF_T
 dnl AC_TYPE_SIZE_T
-dnl AC_STRUCT_TM
 AC_HEADER_STDBOOL
-AC_C_CONST
 
 dnl AC_NEED_STDINT_H
 AC_CHECK_TYPES([int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t])

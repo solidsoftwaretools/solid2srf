@@ -191,9 +191,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  SRF/writer/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  SRF/writer/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  SRF/writer/Makefile
+	  $(AUTOMAKE) --foreign  SRF/writer/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
