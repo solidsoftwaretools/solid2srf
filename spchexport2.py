@@ -14,6 +14,11 @@ class SpchToXml:
 		self.xmldoc.startElement(u'SOLiD', AttributesImpl({}))
 		self.haverundata = False
 		self.xmlpanels = None
+		self.filterTag = None
+
+	def setFilterTag(self,tag):
+		if tag != None:
+			self.filterTag = tag.upper()
 
 	def openHDF(self, fname):
 		if self.h5file != None:
@@ -38,7 +43,7 @@ class SpchToXml:
 		log("Processed Header and Description",2)
 		# After header, start panel block
 		self.xmldoc.startElement(u'Panels', AttributesImpl({}))
-	
+
 	def processPanel(self):
 		panelsgroup = self.getGroup("/Panels")
 		# Don't want to walk panels, but do want to walk all panels.
@@ -68,6 +73,8 @@ class SpchToXml:
 
 		# Recursively walk child groups
 		for subgroup in self.h5file.iterNodes(group, 'Group'):
+			if(self.filterTag and subgroup._v_name in self.filterTag):
+				continue
 			self.walkGroup(subgroup)
 
 		self.xmldoc.endElement(unicode(name))
@@ -82,7 +89,7 @@ class SpchToXml:
 			self.xmldoc.startElement(unicode(name), AttributesImpl({u'shape': unicode(s)}))
 			self.xmldoc.characters(unicode(value))
 			self.xmldoc.endElement(unicode(name))
-	
+
 	def processAttrs(self, attrs):
 		if attrs == None:
 			return ({}, {})
@@ -91,7 +98,7 @@ class SpchToXml:
 		for attrname in attrs._g_listAttr():
 			attrvalue = attrs._g_getAttr(attrname)
 			log("Attr '%s': %s" % (attrname, attrvalue) ,1)
-			
+
 			if attrvalue.shape == () or (len(attrvalue.shape) == 1 and attrvalue.shape[0] == 1):
 				xmlattr[unicode(attrname)] = unicode(str(attrvalue[0]))
 			else:
@@ -114,7 +121,7 @@ class SpchToXml:
 			data = arr
 		strdata = " ".join(map(repr,data))
 		return (s, strdata)
-		
+
 
 	def processLeaf(self, leaf):
 		log("Leaf: %s" % str(leaf),1)
@@ -131,10 +138,11 @@ class SpchToXml:
 				self.xmldoc.characters(unicode(str(leaf[0])))
 			elif len(leaf.shape) <= 2 and max(leaf.shape) <= 4:
 				log("Leaf with array: %s" % str(leaf),3)
-				(s, data) = self.processArray(leaf)
-				self.xmldoc.startElement(u'data', {u'shape': s})
-				self.xmldoc.characters(unicode(data))
-				self.xmldoc.endElement(u'data')
+				#(s, data) = self.processArray(leaf)
+				#self.xmldoc.startElement(u'data', {u'shape': unicode(s) })
+				#self.xmldoc.characters(unicode(data))
+				#self.xmldoc.endElement(u'data')
+				# NB This is usually a mistake - only happens when numbeads = 0
 		else:
 			sys.err.write("ERROR: Unsupported HDF5 Node type: " + str(leaf))
 
@@ -149,26 +157,77 @@ class SpchToXml:
 		sys.stdout.flush()
 
 
-loglevel = 2
+loglevel = 4
 
 def log(msg, level=3):
 	if(level >= loglevel):
 		sys.stderr.write(msg + "\n")
 
+import re
+panelnumbers = re.compile("_\d{4}\.spch")
+def panelnumsort(a, b):
+	anum = panelnumbers.match(a)
+	bnum = panelnumbers.match(b)
+	if anum and bnum:
+		return cmp(anum.group(), bnum.group())
+	# else:
+	return cmp(a, b)
+	
 
 if __name__=='__main__':
-
-	"""
-	Parse cmdline options
-	Instantiate converter
-	"""
-
 	log(sys.argv[0] + " SPCH to XML metadata export", 5)
 	#log(" Version: %VERSION%, Copyright 2008 Applied Biosystems")
 
+
+	from optparse import OptionParser
+	from glob import glob
+	import os
+
+	parser = OptionParser();
+	parser.add_option("-x", "--exclude", dest="tag", type="string",
+					  help="Limit output to a single tag")
+	parser.add_option("-v", "--verbose", dest="verbose", action="count",
+					  help="Verbose output")
+
+	# TODO: Options to implement
+	# output (to file, instead of stdout)
+
+	(options, args) = parser.parse_args()
+
+	if(options.verbose):
+		# NB This is backwards. Fixme with a real logger
+		loglevel -= options.verbose
+		log("Loglevel: %d" % loglevel, 4)
+
 	conv = SpchToXml()
 
-	for spch in sys.argv[1:]:
+	if(options.tag):
+		conv.setFilterTag(options.tag)
+
+	if not args:
+		log("ERROR: No spch files specified",5)
+
+	spchfiles = []
+	for d in args:
+		if os.path.isdir(d):
+			log("Expanding path: %s" % d, 4)
+			spchglob = os.path.abspath(d) + os.path.sep + \
+					   "*" + os.path.extsep + "spch"
+			log("Using glob: %s" % spchglob ,3)
+			allspch = glob(spchglob) # NB Pure alphabetical
+			log("Found %d spch files" % len(allspch), 4)
+			if not allspch:
+				log("ERROR: NO SPCH FILES FOUND", 5)
+			allspch.sort(cmp=panelnumsort)
+			[ spchfiles.append(f) for f in allspch ]
+		else:
+			if os.path.exists(d):
+				spchfiles.append(d)
+			else:
+				log("ERROR: Specified file doesn't exist",5)
+
+
+	for spch in spchfiles:
 		log("Processing SPCH: '%s'" % spch,2)
 		conv.processSPCH(spch)
 		print '\n'
