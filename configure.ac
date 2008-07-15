@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT(solid2srf, 0.6.4)
+AC_INIT(solid2srf, 0.6.5)
 AM_CONFIG_HEADER(srf_config.h)
 AM_INIT_AUTOMAKE
 
