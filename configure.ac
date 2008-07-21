@@ -1,8 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT(solid2srf, 0.6.5)
+AC_INIT(solid2srf, 0.6.6)
 AM_CONFIG_HEADER(srf_config.h)
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 
 dnl AX_CFLAGS_WARN_ALL_ANSI
 dnl FLAGS must be set before CC and CXX macros

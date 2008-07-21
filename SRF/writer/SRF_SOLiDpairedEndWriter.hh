@@ -30,10 +30,11 @@ class SRF_SOLiDpairedEndWriter : public SRF_SOLiDWriter
         bool identifyNextPairToWrite( void );
         void insertDummy( std::vector<SRF_SOLiDdataSet>& dummyInsertSet,
                           const std::vector<SRF_SOLiDdataSet>& goodSet,
-                          char lastPrimerBase,
-                          const std::string& suffix );
+                          char lastPrimerBase );
         bool createRegnChunk( std::string& blob );
         void modifyDataByREGNBlockContent( void );
+        std::string constructSuffix( const std::string& origGoodSuffix,
+                                     const std::string& origBadSuffix );
 
        SRF_SOLiDfileSet fileSet1;
        SRF_SOLiDfileSet fileSet2;
@@ -46,8 +47,6 @@ class SRF_SOLiDpairedEndWriter : public SRF_SOLiDWriter
 
        char lastPrimerBase1;
        char lastPrimerBase2;
-       std::string suffix1;
-       std::string suffix2;
 };
 
 #endif

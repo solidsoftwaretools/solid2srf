@@ -191,14 +191,6 @@ SRF_SOLiDpairedEndWriter::identifyNextPairToWrite( void )
         partialReadId1 >> panelId1 >> x1 >> y1 >> extra1;
         partialReadId2 >> panelId2 >> x2 >> y2 >> extra2;
 
-        // construct correct suffixes in case dummies are required
-        std::ostringstream osuffix1( "" );
-        std::ostringstream osuffix2( "" );
-        osuffix1 << x2 << '_' << y2 << '_' << extra1;
-        osuffix2 << x1 << '_' << y1 << '_' << extra2;
-        suffix1 = osuffix1.str();
-        suffix2 = osuffix2.str();
-
         if ( panelId1 == panelId2 )
         {
             if ( x1 == x2 )
@@ -245,22 +237,34 @@ SRF_SOLiDpairedEndWriter::identifyNextPairToWrite( void )
  
     if ( dummyOn1 )
     {
-        insertDummy( dataSetsFile1, dataSetsFile2, lastPrimerBase1, suffix1 );
+        insertDummy( dataSetsFile1, dataSetsFile2, lastPrimerBase1 );
     }
     else
     {
-        insertDummy( dataSetsFile2, dataSetsFile1, lastPrimerBase2, suffix2 );
+        insertDummy( dataSetsFile2, dataSetsFile1, lastPrimerBase2 );
     }
 
     return TRUE;
+}
+
+std::string
+SRF_SOLiDpairedEndWriter::constructSuffix( const std::string& origGoodSuffix,
+                                           const std::string& origBadSuffix )
+{
+    size_t foundGood = origGoodSuffix.find_last_of( '_' );
+    size_t foundBad = origBadSuffix.find_last_of( '_' );
+
+    std::string newSuffix = origGoodSuffix.substr(0, foundGood) +
+                 origBadSuffix.substr( foundBad );
+
+    return newSuffix;
 }
 
 void
 SRF_SOLiDpairedEndWriter::insertDummy(
                              std::vector<SRF_SOLiDdataSet>& dummyInsertSet,
                        const std::vector<SRF_SOLiDdataSet>& goodSet,
-                             char lastPrimerBase,
-                       const std::string& suffix )
+                             char lastPrimerBase )
 {
     // have to insert a dummy SRF_SOLiDdataSet object into one set
     // to account for a missing read
@@ -308,7 +312,8 @@ SRF_SOLiDpairedEndWriter::insertDummy(
     SRF_SOLiDdataSet dummy;
     dummy.partialReadId = goodSet[1].partialReadId;
     dummy.panelId = goodSet[1].panelId;
-    dummy.readIdSuffix = suffix;
+    dummy.readIdSuffix = constructSuffix( goodSet[1].readIdSuffix,
+                           dummyInsertSet[dummyInsertSetCopyRow].readIdSuffix );
 
     dummy.calls.push_back( firstBase );
     dummy.calls.insert( dummy.calls.end(),
@@ -535,7 +540,6 @@ SRF_SOLiDpairedEndWriter::writeDB( void )
                  dataSetsFile2[1].intensityData[3].intensityValues.begin(),
                  dataSetsFile2[1].intensityData[3].intensityValues.end() );
         // 
-
         if ( intensityDataJoined[0].intensityValues.size() > 0 &&
              !createSampChunks( intensityDataJoined, blob ) )
         {
@@ -544,6 +548,7 @@ SRF_SOLiDpairedEndWriter::writeDB( void )
                             dataSetsFile1[1].readIdSuffix <<  std::endl;
             return FALSE;
         }
+
     }
 
     SRF_DataBlock dataBlock;
