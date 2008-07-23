@@ -5,9 +5,17 @@
 #ifndef SRF_SOLIDFILE_HH
 #define SRF_SOLIDFILE_HH
 //
-#include <istream>
-#include <fstream>
+#include <iosfwd>
 #include <string>
+
+#ifdef HAVE_CONFIG_H
+#include <srf_config.h>
+#endif
+
+#ifdef HAVE_EXT_STDIO_FILEBUF_H
+#include <ext/stdio_filebuf.h>
+#include <cstdio>
+#endif
 
 class SRF_SOLiDfile
 {
@@ -29,8 +37,12 @@ class SRF_SOLiDfile
     protected:
         bool readNextBlockCommon( const std::string& cfastaPartialReadId );
 
-        std::ifstream file;
-
+        std::istream* file;
+#ifdef HAVE_EXT_STDIO_FILEBUF_H
+        __gnu_cxx::stdio_filebuf<char>* pipe;
+        FILE* fp;
+#endif
+  
         // FRIEND CLASS
         friend class SRF_SOLiDintensityFiles;
 

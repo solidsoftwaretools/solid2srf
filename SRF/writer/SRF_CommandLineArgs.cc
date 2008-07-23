@@ -17,7 +17,7 @@ SRF_CommandLineArgs::~SRF_CommandLineArgs( void )
 
 
 bool
-SRF_CommandLineArgs::extract( int argc, char** argv )
+SRF_CommandLineArgs::extract( int argc, char* argv[] )
 {
     int ii = 1;
     while ( ii < argc )

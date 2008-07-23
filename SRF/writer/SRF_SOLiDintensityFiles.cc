@@ -1,6 +1,7 @@
 //
 #include <map>
 #include <string>
+#include <sys/stat.h>
 #include <SRF_util.hh>
 #include <ZTR_util.hh>
 #include <SRF_SOLiDintensityFiles.hh>
@@ -30,6 +31,11 @@ SRF_SOLiDintensityFiles::open( const std::string& intensityFilesRoot,
     std::string txrIntensStr = intensityFilesRoot + txrExt;
     std::string cy5IntensStr = intensityFilesRoot + cy5Ext;
 
+    checkExtension(ftcIntensStr);
+    checkExtension(cy3IntensStr);
+    checkExtension(txrIntensStr);
+    checkExtension(cy5IntensStr);
+    
     if ( !ftcIntens.open( ftcIntensStr.c_str(),
                           title,
                           titleOverride ) ||
@@ -42,11 +48,10 @@ SRF_SOLiDintensityFiles::open( const std::string& intensityFilesRoot,
          !cy5Intens.open( cy5IntensStr.c_str(),
                           title,
                           titleOverride ) )
-    {
-        std::cout << "ERROR: can't open intensity files\n";
-        return FALSE;
-    }
-
+      {
+          std::cout << "ERROR: can't open intensity files\n";
+          return FALSE;
+      }
     return TRUE;
 
 }
@@ -123,19 +128,33 @@ SRF_SOLiDintensityFiles::readIntensityValues( SRF_SOLiDfile& file,
 {
     values.clear();
     std::string intensValuesString;
-    std::getline( file.file, intensValuesString );
+    std::getline( *(file.file), intensValuesString );
     ZTR_ConvertStringToFloatVector( intensValuesString, &values );
 
     return TRUE;
 }
 
+void
+SRF_SOLiDintensityFiles::checkExtension( std::string& fileStr )
+{
+  struct stat st;
+  if(stat(fileStr.c_str(), &st) != 0) {
+        std::string testgz = fileStr + ".gz";
+        if(stat(testgz.c_str(), &st) == 0) {
+            fileStr += ".gz";
+        }
+  }
+  // NB fileStr is modified
+}
+
 bool
 SRF_SOLiDintensityFiles::areFilesOpen( void ) const
 {
-    if ( ftcIntens.isFileOpen() ) // if one is open all are open
-    {
-        return TRUE;
-    }
-
-    return FALSE;
+    // NB: Since the files are opened in order, 
+    //  it's possible that the first few may succeed, and the rest could still be closed.
+    // Could get away with just checking last file (cy5) here.
+    return ( ftcIntens.isFileOpen() &&
+             cy3Intens.isFileOpen() &&
+             txrIntens.isFileOpen() &&
+             cy5Intens.isFileOpen() );
 }

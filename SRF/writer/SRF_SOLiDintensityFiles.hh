@@ -5,7 +5,7 @@
 #ifndef SRF_SOLIDINTENSITYFILES_HH
 #define SRF_SOLIDINTENSITYFILES_HH
 //
-#include <istream>
+#include <iosfwd>
 #include <vector>
 #include <string>
 #include <SRF_SOLiDfile.hh>
@@ -32,6 +32,7 @@ class SRF_SOLiDintensityFiles
        bool readIntensityValues( SRF_SOLiDfile& file,
                                  std::vector<float>& values );
 
+       void checkExtension( std::string& fileStr );
 
         SRF_SOLiDfile ftcIntens;
         SRF_SOLiDfile cy3Intens;

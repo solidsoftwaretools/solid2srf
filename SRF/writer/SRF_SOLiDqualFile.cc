@@ -33,7 +33,7 @@ SRF_SOLiDqualFile::readNextBlock( const std::string& cfastaPartialReadId,
     // next is the line of quals
     dataSet->confValues.clear();
     std::string confValuesString;
-    std::getline( file, confValuesString );
+    std::getline( *file, confValuesString );
     ZTR_ConvertStringToIntVector( confValuesString, &(dataSet->confValues) );
 
     return TRUE;

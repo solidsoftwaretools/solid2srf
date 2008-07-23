@@ -19,15 +19,15 @@ SRF_SOLiDcfastaFile::~SRF_SOLiDcfastaFile( void )
 bool
 SRF_SOLiDcfastaFile::readNextBlock( SRF_SOLiDdataSet* dataSet )
 {
-    if ( file.peek() != '>' )
+    if ( (*file).peek() != '>' )
     {
         std::cout << "ERROR: unexpected file format in cfasta file\n";
         return FALSE;
     }
 
     char tmp;
-    file >> tmp >> dataSet->partialReadId;
-    file.get(); // new line char
+    *file >> tmp >> dataSet->partialReadId;
+    (*file).get(); // new line char
 
     // get panel Id
     int firstUnderscore = dataSet->partialReadId.find( '_' );
@@ -43,7 +43,7 @@ SRF_SOLiDcfastaFile::readNextBlock( SRF_SOLiDdataSet* dataSet )
                        dataSet->partialReadId.substr( firstUnderscore + 1 );
 
     // next is the line of calls
-    std::getline( file, dataSet->calls );
+    std::getline( *file, dataSet->calls );
 
     return TRUE;
 }

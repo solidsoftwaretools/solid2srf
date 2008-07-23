@@ -1,8 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.59)
-AC_INIT(solid2srf, 0.6.6)
+AC_INIT(solid2srf, 0.6.7)
 AM_CONFIG_HEADER(srf_config.h)
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign]) 
 
 dnl AX_CFLAGS_WARN_ALL_ANSI
 dnl FLAGS must be set before CC and CXX macros
@@ -23,6 +23,7 @@ AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
+#AC_ENABLE_SHARED
 
 dnl Checks for libraries
 
@@ -64,9 +65,20 @@ dnl AC_FUNC_STRFTIME
 dnl AC_FUNC_VPRINTF
 dnl AC_CHECK_FUNCS(mktime strspn strstr strtol)
 
-dnl Check for libcurl and zlib
-dnl AC_CHECK_LIB(z, deflate, ,AC_MSG_ERROR([*** zlib missing - please install first or check config.log ***]))
-dnl AC_CHECK_HEADER([zlib.h], ,AC_MSG_ERROR([*** zlib.h missing - please install first or check config.log ***]))
+dnl Check for zlib
+dnl AC_CHECK_LIB(z, gzopen, [AC_CHECK_HEADERS(zlib.h,, AC_MSG_ERROR(ZLIB headers not found))], [AC_MSG_ERROR(ZLIB library not found)])
+#AC_ARG_ENABLE(zlib, [  --enable-zlib           turn on ZLIB support: auto,no (default=auto)])
+#if test x$enable_zlib != xno; then
+#    AC_CHECK_HEADER(zlib.h,[ AC_CHECK_LIB(z, gzopen,[
+#     AC_DEFINE(HAVE_LIBZ, 1, "Have ZLIB")
+#    ])])
+#fi
+
+dnl GCC extension for wrapping a pipe in a stream
+AC_LANG_PUSH([C++])
+AC_CHECK_HEADERS([ext/stdio_filebuf.h],, [AC_MSG_ERROR([__gnu_cxx::stdio_filebuf (GNU libstdc++) is not installed, but is required by schroot])])
+AC_LANG_POP([C++])
+
 dnl AC_CHECK_LIB(curl, curl_easy_init, ,AC_MSG_ERROR([*** zlib missing - please install first or check config.log ***]))
 dnl AC_CHECK_HEADER([curl.h], ,AC_MSG_ERROR([*** zlib.h missing - please install first or check config.log ***]))
 
