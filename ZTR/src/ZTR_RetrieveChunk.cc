@@ -153,8 +153,13 @@ ZTR_RetrieveChunk::extractData( const ZTR_ChunkMatchParams& matchParams,
         }
 
         pairedEndName1 = names[ii];
-        pairedEndName2 = names[ii+2];
-        ii++; // this increments to 1 past the end of the first paired end read
+        int jj = ii + 1;
+        while ( codes[jj] != ZTR_REGNtypesPaired )
+        {
+            jj++;
+        }
+        pairedEndName2 = names[jj];
+//        ii++; // this increments to 1 past the end of the first paired end read
 
         int split = (regnChunk->getUncompressedDataInt())[ii];
 
