@@ -1,5 +1,4 @@
 //
-#include <ios>
 #include <iostream>
 #include <string>
 #include <stddef.h>
@@ -14,7 +13,7 @@ main(int argc, char **argv)
     SRF_CommandLineArgs args;
     if ( argc < 5 || !args.extract( argc, argv ) )
     {
-	std::cout << "Usage: writer -cf <cfasta file> -o <output file>\n"
+    std::cout << "Usage: writer -cf <cfasta file> -o <output file>\n"
                   << " -t <title>\n"
                   << " additional arguments optional\n"
                   << " -q <qual file>"
@@ -30,16 +29,20 @@ main(int argc, char **argv)
                   << " -q2 <second qual file>\n"
                   << " -i2 <second intensity files root>\n"
                   << " -noPrimerBaseInREGN\n";
-	exit(1);
+    exit(1);
     }
+
+    std::cerr << "  *** SRF_WriteGenSOLiD\n";
 
     SRF_SOLiDWriter* writer = NULL;
     if ( args.isPairedEndWrite() )
     {
+         std::cerr << "Initializing Paired End Writer\n";
          writer = (SRF_SOLiDWriter*) new SRF_SOLiDpairedEndWriter( args );
     }
     else
     {
+         std::cerr << "Initializing Single Tag Writer\n";
          writer = (SRF_SOLiDWriter*) new SRF_SOLiDsingleEndWriter( args );
     }
     
@@ -49,6 +52,7 @@ main(int argc, char **argv)
         exit( -1 );
     }
 
+    std::cerr << "Writing SRF container header and XML\n";
 // write SRF container header
     if ( !writer->writeHeaderAndXml() )
     {
@@ -57,7 +61,9 @@ main(int argc, char **argv)
         exit( -1 );
     }
 
-    bool allFilesEnd = TRUE;
+    std::cerr << "Writing data blocks\n";
+    bool allFilesEnd = FALSE; // Assume failure, let success be explicitly set
+    long int count = 0;
     while ( writer->moreData( allFilesEnd ) )
     {
         if ( !writer->writeNextBlock() )
@@ -66,7 +72,13 @@ main(int argc, char **argv)
             delete writer;
             exit(-1);
         }
+        count++;
+        if( (count % 100000) == 0 )
+        {
+		  std::cerr << "   Processed " << count << " reads.\n";
+        }
     }
+    std::cerr << "   Wrote " << count << " reads.\n";
 
     if (!allFilesEnd)
     {
@@ -74,7 +86,9 @@ main(int argc, char **argv)
         delete writer;
         exit(-1);
     }
+    std::cerr << "Completed writing all data blocks\n";
 
+    std::cerr << "Writing SRF footer\n";
     if ( !writer->writeFooter() )
     {
         std::cout << "ERROR: failed to write SRF footer\n";
@@ -84,6 +98,7 @@ main(int argc, char **argv)
 
     delete writer;
 
+    std::cerr << "SRF Generation Complete.\n";
     exit( 0 );
 }
 

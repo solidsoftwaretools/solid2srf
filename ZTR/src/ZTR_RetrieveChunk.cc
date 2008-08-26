@@ -8,6 +8,10 @@
 #include <ZTR_RetrieveChunk.hh>
 #include <sstream>
 
+#ifdef HAVE_CONFIG_H
+#include <srf_config.h>
+#endif
+
 ZTR_RetrieveChunk::ZTR_RetrieveChunk( void )
 :
 matchedChunk( NULL ),
@@ -242,9 +246,18 @@ ZTR_RetrieveChunk::getDataForOutputGen( const ZTR_Data& dataIn ) const
     else if ( dataIn.floats.size() > 0 )
     {
         std::vector<float>::const_iterator it = dataIn.floats.begin();
+        char buffer[100];
         while ( it != dataIn.floats.end() )
         {
-            oss << (*it) << " ";
+            snprintf( buffer, 100, "%.6g", (*it) );
+#ifdef BROKEN_PRINTF
+            if ( ((*it) > 0 && strncmp( buffer, "1e-04", 5 ) == 0 ) ||
+                 ((*it) < 0 && strncmp( buffer, "-1e-04", 6 ) == 0 ) )
+            {
+                snprintf( buffer, 100, "%.4f", (*it) );
+            }
+#endif // BROKEN_PRINTF
+            oss << buffer << " ";
             it++;
         }
     }

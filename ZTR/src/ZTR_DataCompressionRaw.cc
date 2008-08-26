@@ -1,4 +1,4 @@
-//
+///
 #include <ios>
 #include <string>
 #include <sstream>
@@ -181,6 +181,7 @@ ZTR_DataCompressionRaw::compressAndByteOrder(
              ZTR_floatToIntU conv;
              conv.f = *it;
              uint32_t value = ZTR_ByteSwapAsRequired_4( conv.i );
+			 // FIXME - Expensive string appending.
              compressedData->append(
                             reinterpret_cast<const char*>(&value), 4 );
              it++;

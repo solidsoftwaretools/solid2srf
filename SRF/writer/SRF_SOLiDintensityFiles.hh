@@ -5,7 +5,6 @@
 #ifndef SRF_SOLIDINTENSITYFILES_HH
 #define SRF_SOLIDINTENSITYFILES_HH
 //
-#include <iosfwd>
 #include <vector>
 #include <string>
 #include <SRF_SOLiDfile.hh>

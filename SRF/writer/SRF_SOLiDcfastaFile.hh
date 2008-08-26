@@ -5,8 +5,7 @@
 #ifndef SRF_SOLIDCFASTAFILE_HH
 #define SRF_SOLIDCFASTAFILE_HH
 //
-#include <istream>
-#include <string>
+
 #include <SRF_SOLiDfile.hh>
 
 class SRF_SOLiDcfastaFile : public SRF_SOLiDfile

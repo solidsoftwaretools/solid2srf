@@ -5,7 +5,6 @@
 #ifndef SRF_SOLIDWRITER_HH
 #define SRF_SOLIDWRITER_HH
 //
-#include <istream>
 #include <string>
 #include <ZTR_ChunkREGN.hh>
 #include <SRF_File.hh>

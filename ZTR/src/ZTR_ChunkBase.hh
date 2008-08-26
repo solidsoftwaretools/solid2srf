@@ -11,7 +11,7 @@
 typedef enum
 {
     ZTR_ChunkBaseCharSetIUPAC,
-    ZTR_ChunkBaseCharSetColourSpace,
+    ZTR_ChunkBaseCharSetColourSpace
 } ZTR_ChunkBaseCharSet;
 
 

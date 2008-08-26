@@ -17,6 +17,7 @@
 #include <cstdio>
 #endif
 
+
 class SRF_SOLiDfile
 {
     public:
@@ -42,7 +43,7 @@ class SRF_SOLiDfile
         __gnu_cxx::stdio_filebuf<char>* pipe;
         FILE* fp;
 #endif
-  
+
         // FRIEND CLASS
         friend class SRF_SOLiDintensityFiles;
 

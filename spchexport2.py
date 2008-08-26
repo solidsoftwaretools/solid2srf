@@ -137,7 +137,7 @@ class SpchToXml:
 			if len(leaf.shape) == 1 and leaf.shape[0] == 1:
 				self.xmldoc.characters(unicode(str(leaf[0])))
 			elif len(leaf.shape) <= 2 and max(leaf.shape) <= 4:
-				log("Leaf with array: %s" % str(leaf),3)
+				log("Leaf with array: %s" % str(leaf),2)
 				#(s, data) = self.processArray(leaf)
 				#self.xmldoc.startElement(u'data', {u'shape': unicode(s) })
 				#self.xmldoc.characters(unicode(data))
@@ -228,7 +228,7 @@ if __name__=='__main__':
 
 
 	for spch in spchfiles:
-		log("Processing SPCH: '%s'" % spch,2)
+		log("Processing SPCH: '%s'" % spch,3)
 		conv.processSPCH(spch)
 		print '\n'
 		sys.stdout.flush()

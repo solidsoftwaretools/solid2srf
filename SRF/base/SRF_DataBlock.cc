@@ -54,9 +54,10 @@ SRF_DataBlock::populate( void )
     blob.clear();
     if ( sizeOfBlobCalc > 0 )
     {
-        char cstr[sizeOfBlobCalc];
+        char *cstr = new char[sizeOfBlobCalc];
         inputData.read( cstr,  sizeOfBlobCalc);
         blob.assign(cstr,  sizeOfBlobCalc);
+        delete[] cstr;
     }
 
    return TRUE;

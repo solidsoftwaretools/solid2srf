@@ -16,6 +16,7 @@ class SRF_ContainerHeader;
 class SRF_DataBlockHeader;
 class SRF_DataBlock;
 
+int
 main(int argc, char* argv[])
 {
     if ( argc != 2 )

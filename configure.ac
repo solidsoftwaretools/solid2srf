@@ -1,8 +1,10 @@
-dnl Process this file with autoconf to produce a configure script.
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
 AC_PREREQ(2.59)
-AC_INIT(solid2srf, 0.6.7)
+AC_INIT(solid2srf, 0.7.1, [http://solidsoftwaretools.com/])
 AM_CONFIG_HEADER(srf_config.h)
-AM_INIT_AUTOMAKE([foreign]) 
+AM_INIT_AUTOMAKE([foreign])
 
 dnl AX_CFLAGS_WARN_ALL_ANSI
 dnl FLAGS must be set before CC and CXX macros
@@ -18,12 +20,12 @@ fi
 export CFLAGS CXXFLAGS
 
 dnl Checks for programs.
-AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
-#AC_ENABLE_SHARED
+dnl AC_ENABLE_SHARED
 
 dnl Checks for libraries
 
@@ -38,9 +40,10 @@ AC_CHECK_SIZEOF(short,2)
 AC_CHECK_SIZEOF(int,4)
 AC_CHECK_SIZEOF(long,4)
 AC_C_INLINE
+AC_C_CONST
 AC_TYPE_MODE_T
 dnl AC_TYPE_OFF_T
-dnl AC_TYPE_SIZE_T
+AC_TYPE_SIZE_T
 AC_HEADER_STDBOOL
 
 dnl AC_NEED_STDINT_H
@@ -59,11 +62,30 @@ AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 
 dnl Checks for library functions.
+AC_FUNC_STAT					
 AC_CHECK_FUNCS([memset strdup])
 AC_SEARCH_LIBS(cos, m)
 dnl AC_FUNC_STRFTIME
 dnl AC_FUNC_VPRINTF
 dnl AC_CHECK_FUNCS(mktime strspn strstr strtol)
+
+
+AC_MSG_CHECKING([if printf conforms to C99 for 0.0001])
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+#include <stdio.h>
+#include <string.h>
+char buf[11];
+]],
+[[
+   snprintf(buf,10,"%0.6g", 0.0001f);
+   return(strncmp(buf, "0.0001", 10) == 0);
+]])],
+   [AC_MSG_RESULT([broken])
+    AC_DEFINE(BROKEN_PRINTF, 1, "Defined if printf outputs 1e-4 when given 0.0001") ],
+   [AC_MSG_RESULT([ok])],
+   [AC_MSG_RESULT([skip]),
+    AC_DEFINE(BROKEN_PRINTF, 1, "Defined if printf outputs 1e-4 when given 0.0001") ]
+)
 
 dnl Check for zlib
 dnl AC_CHECK_LIB(z, gzopen, [AC_CHECK_HEADERS(zlib.h,, AC_MSG_ERROR(ZLIB headers not found))], [AC_MSG_ERROR(ZLIB library not found)])
@@ -76,11 +98,19 @@ dnl AC_CHECK_LIB(z, gzopen, [AC_CHECK_HEADERS(zlib.h,, AC_MSG_ERROR(ZLIB headers
 
 dnl GCC extension for wrapping a pipe in a stream
 AC_LANG_PUSH([C++])
-AC_CHECK_HEADERS([ext/stdio_filebuf.h],, [AC_MSG_ERROR([__gnu_cxx::stdio_filebuf (GNU libstdc++) is not installed, but is required by schroot])])
+AC_CHECK_HEADERS([ext/stdio_filebuf.h],, [AC_MSG_ERROR([__gnu_cxx::stdio_filebuf (GNU libstdc++) is not installed])])
 AC_LANG_POP([C++])
+
+dnl AC_CHECK_LIB(z, gzopen, [AC_CHECK_HEADERS(zlib.h,, AC_MSG_ERROR(ZLIB headers not found))], [AC_MSG_ERROR(ZLIB library not found)])
 
 dnl AC_CHECK_LIB(curl, curl_easy_init, ,AC_MSG_ERROR([*** zlib missing - please install first or check config.log ***]))
 dnl AC_CHECK_HEADER([curl.h], ,AC_MSG_ERROR([*** zlib.h missing - please install first or check config.log ***]))
-
-AC_CONFIG_FILES([Makefile ZTR/Makefile ZTR/src/Makefile SRF/Makefile SRF/base/Makefile SRF/writer/Makefile SRF/reader/Makefile])
+ 
+AC_CONFIG_FILES([Makefile 
+		         ZTR/Makefile
+				 ZTR/src/Makefile
+				 SRF/Makefile
+				 SRF/base/Makefile
+				 SRF/writer/Makefile
+				 SRF/reader/Makefile])
 AC_OUTPUT

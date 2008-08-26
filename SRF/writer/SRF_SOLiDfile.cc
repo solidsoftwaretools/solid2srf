@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <cstdio>
 #include <SRF_util.hh>
 #include <ZTR_util.hh>
 #include <SRF_SOLiDfile.hh>
@@ -15,6 +16,8 @@
 #include <cstdio>
 #endif
 
+#define CHUNK 12288
+
 SRF_SOLiDfile::SRF_SOLiDfile( void )
 {
     fileOpen = FALSE;
@@ -24,15 +27,22 @@ SRF_SOLiDfile::SRF_SOLiDfile( void )
 SRF_SOLiDfile::~SRF_SOLiDfile( void )
 {
 #ifdef HAVE_EXT_STDIO_FILEBUF_H  
+    //pclose(fp); // Close underlying fd first
     if(pipe != NULL) {
+        // Close wrapping stream
         (*pipe).close();
-        delete pipe;
+        DELETE( pipe );
     }
-    pclose(fp);
+    fp = NULL;
 #endif
     if(file != NULL) {
         // istream has no close()
-        delete file;
+        if(std::ifstream *f2 = dynamic_cast<std::ifstream *>(file)) {
+            // But if it's really a ifstream, we can close it.
+            (*f2).close();
+            DELETE( f2 );
+        }
+        DELETE( file );
     }
 }
 
@@ -41,15 +51,13 @@ SRF_SOLiDfile::open( const std::string& filename,
                      const std::string& title,
                      bool titleOverride )
 {
-
     size_t found = filename.rfind(".gz");
     if (found != std::string::npos) {
 #ifdef HAVE_EXT_STDIO_FILEBUF_H
         using __gnu_cxx::stdio_filebuf;
-
         std::string cmd = "gzip -dc " + filename;
         fp = popen(cmd.c_str(), "r");
-        pipe = new stdio_filebuf<char>( fp, std::ios::in );
+        pipe = new stdio_filebuf<char>( fp, std::ios::in, CHUNK );
         file = new std::istream(pipe);
 #else
         std::cout << "ERROR: Unable to read gz file. Recompile with g++ extensions" << std::endl;
@@ -59,11 +67,11 @@ SRF_SOLiDfile::open( const std::string& filename,
         // This runs when zlib isn't enabled, or when the file isn't a gz file
         file = new std::ifstream( filename.c_str(), std::ifstream::in );
     }
-    assert(file != NULL);
 
-    if (!(*file).good() )
+    if ( !(*file).good() )
     {
-        std::cout << "ERROR: Writer can't open input file: "
+        DELETE( file );
+        std::cout << "ERROR: Writer can't open input file"
                   << filename << std::endl;
         return FALSE;
     }
@@ -131,7 +139,7 @@ SRF_SOLiDfile::readNextBlockCommon( const std::string& cfastaPartialReadId )
 
     char tmp;
     std::string partialReadId;
-    *file >> tmp >> partialReadId;
+    (*file) >> tmp >> partialReadId;
     (*file).get(); // new line char
     if ( partialReadId != cfastaPartialReadId )
     {

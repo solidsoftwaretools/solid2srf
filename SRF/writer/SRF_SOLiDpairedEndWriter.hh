@@ -5,7 +5,8 @@
 #ifndef SRF_SOLIDPAIREDENDWRITER_HH
 #define SRF_SOLIDPAIREDENDWRITER_HH
 //
-#include <istream>
+#include <vector>
+#include <string>
 #include <SRF_SOLiDWriter.hh>
 #include <SRF_SOLiDcfastaFile.hh>
 #include <SRF_SOLiDqualFile.hh>

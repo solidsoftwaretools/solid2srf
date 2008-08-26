@@ -1,5 +1,8 @@
 /* srf_config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* "Defined if printf outputs 1e-4 when given 0.0001" */
+#undef BROKEN_PRINTF
+
 /* Define to 1 if you have the <ext/stdio_filebuf.h> header file. */
 #undef HAVE_EXT_STDIO_FILEBUF_H
 
@@ -26,6 +29,10 @@
 
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
+
+/* Define to 1 if `stat' has the bug that it succeeds when given the
+   zero-length file name argument. */
+#undef HAVE_STAT_EMPTY_STRING_BUG
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H
@@ -75,6 +82,10 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
+/* Define to 1 if `lstat' dereferences a symlink specified with a trailing
+   slash. */
+#undef LSTAT_FOLLOWS_SLASHED_SYMLINK
+
 /* Name of package */
 #undef PACKAGE
 
@@ -120,6 +131,9 @@
 
 /* Define for large files, on AIX-style hosts. */
 #undef _LARGE_FILES
+
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */

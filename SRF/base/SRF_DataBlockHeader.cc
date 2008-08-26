@@ -56,9 +56,10 @@ SRF_DataBlockHeader::populate( void )
     header.clear();
     if ( sizeHeaderBlobCalc > 0 )
     {
-	char cstr[sizeHeaderBlobCalc];
+    char *cstr = new char[sizeHeaderBlobCalc];
         inputData.read( cstr,  sizeHeaderBlobCalc);
 	header.assign(cstr,  sizeHeaderBlobCalc);
+    delete[] cstr;
     }
 
    return TRUE;

@@ -1,6 +1,4 @@
 //
-#include <map>
-#include <iostream>
 #include <string>
 #include <SRF_util.hh>
 #include <SRF_SOLiDstructs.hh>
