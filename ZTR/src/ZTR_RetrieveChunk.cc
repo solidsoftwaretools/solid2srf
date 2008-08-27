@@ -18,6 +18,7 @@ matchedChunk( NULL ),
 regnChunk( NULL )
 {
     pairedEndRead = FALSE;
+    useFastQ = FALSE;
 }
 
 ZTR_RetrieveChunk::~ZTR_RetrieveChunk( void )
@@ -213,6 +214,12 @@ ZTR_RetrieveChunk::isPairedEndRead( void ) const
     return pairedEndRead;
 }
 
+void
+ZTR_RetrieveChunk::setUseFastQ ()
+{
+  useFastQ = true;
+}
+
 std::string
 ZTR_RetrieveChunk::getDataForOutput( void ) const
 {
@@ -225,6 +232,20 @@ ZTR_RetrieveChunk::getData2of2ForOutput( void ) const
     return getDataForOutputGen( data2of2 );
 }
 
+void
+ZTR_RetrieveChunk::streamFastaQ ( const ZTR_Data& dataIn,
+				  std::ostringstream &oss ) const
+{
+    std::vector<int>::const_iterator it = dataIn.ints.begin();
+    while ( it != dataIn.ints.end() )
+    {
+        if ( (*it) + 33 >= 256 )
+            std::cerr << "Warning, value has overflowed the fastq representation.\n";
+        char qvalue = 33 + static_cast<char>(*it);
+        oss << qvalue;
+        it++;
+    }
+}
 
 std::string
 ZTR_RetrieveChunk::getDataForOutputGen( const ZTR_Data& dataIn ) const
@@ -236,11 +257,15 @@ ZTR_RetrieveChunk::getDataForOutputGen( const ZTR_Data& dataIn ) const
     }
     else if ( dataIn.ints.size() > 0 )
     {
-        std::vector<int>::const_iterator it = dataIn.ints.begin();
-        while ( it != dataIn.ints.end() )
-        {
-            oss << (*it) << " ";
-            it++;
+        if ( useFastQ ) {
+	  streamFastaQ(dataIn, oss);
+	} else {
+            std::vector<int>::const_iterator it = dataIn.ints.begin();
+            while ( it != dataIn.ints.end() )
+            {
+                oss << (*it) << " ";
+                it++;
+            }
         }
     }
     else if ( dataIn.floats.size() > 0 )
