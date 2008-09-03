@@ -30,7 +30,6 @@ class ZTR_RetrieveChunk
         const ZTR_Data& getData2of2( void ) const;
 
         bool isPairedEndRead( void ) const;
-        void setUseFastQ ();
 
         bool extract( const ZTR_ChunkList& chunkList,
                       const ZTR_ChunkMatchParams& matchParams,
@@ -48,8 +47,6 @@ class ZTR_RetrieveChunk
         bool extractData( const ZTR_ChunkMatchParams& matchParams,
                           bool splitPair );
 
-        void streamFastaQ ( const ZTR_Data& dataIn,
-                            std::ostringstream &oss ) const;
         std::string getDataForOutputGen( const ZTR_Data& dataIn ) const;
 
         bool pairedEndRead;
@@ -63,7 +60,6 @@ class ZTR_RetrieveChunk
         std::string pairedEndName1;
         std::string pairedEndName2;
 
-        bool useFastQ; //use fastZ format when printing out int
 };
 
 #endif

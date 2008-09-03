@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(SRF_FastLikeConverter_SOURCES) $(SRF_Reader_SOURCES) $(SRF_ZtrReader_SOURCES)
+SOURCES = $(SRF_FastLikeConverter_SOURCES) $(SRF_FastqConverter_SOURCES) $(SRF_Reader_SOURCES) $(SRF_ZtrReader_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -37,7 +37,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = SRF_Reader$(EXEEXT) SRF_ZtrReader$(EXEEXT) \
-	SRF_FastLikeConverter$(EXEEXT)
+	SRF_FastLikeConverter$(EXEEXT) SRF_FastqConverter$(EXEEXT)
 subdir = SRF/reader
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -56,6 +56,10 @@ am__DEPENDENCIES_1 =
 SRF_FastLikeConverter_DEPENDENCIES =  \
 	$(top_builddir)/SRF/base/libsrf.a \
 	$(top_builddir)/ZTR/src/libztr.a $(am__DEPENDENCIES_1)
+am_SRF_FastqConverter_OBJECTS = SRF_FastqConverter.$(OBJEXT)
+SRF_FastqConverter_OBJECTS = $(am_SRF_FastqConverter_OBJECTS)
+SRF_FastqConverter_DEPENDENCIES = $(top_builddir)/SRF/base/libsrf.a \
+	$(top_builddir)/ZTR/src/libztr.a $(am__DEPENDENCIES_1)
 am_SRF_Reader_OBJECTS = SRF_Reader.$(OBJEXT)
 SRF_Reader_OBJECTS = $(am_SRF_Reader_OBJECTS)
 SRF_Reader_DEPENDENCIES = $(top_builddir)/SRF/base/libsrf.a \
@@ -72,9 +76,11 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(SRF_FastLikeConverter_SOURCES) $(SRF_Reader_SOURCES) \
+SOURCES = $(SRF_FastLikeConverter_SOURCES) \
+	$(SRF_FastqConverter_SOURCES) $(SRF_Reader_SOURCES) \
 	$(SRF_ZtrReader_SOURCES)
-DIST_SOURCES = $(SRF_FastLikeConverter_SOURCES) $(SRF_Reader_SOURCES) \
+DIST_SOURCES = $(SRF_FastLikeConverter_SOURCES) \
+	$(SRF_FastqConverter_SOURCES) $(SRF_Reader_SOURCES) \
 	$(SRF_ZtrReader_SOURCES)
 ETAGS = etags
 CTAGS = ctags
@@ -165,6 +171,8 @@ SRF_ZtrReader_SOURCES = SRF_ZtrReader.cc
 SRF_ZtrReader_LDADD = $(top_builddir)/SRF/base/libsrf.a  $(top_builddir)/ZTR/src/libztr.a @LDFLAGS@ $(LDLIB)
 SRF_FastLikeConverter_SOURCES = SRF_FastLikeConverter.cc
 SRF_FastLikeConverter_LDADD = $(top_builddir)/SRF/base/libsrf.a  $(top_builddir)/ZTR/src/libztr.a @LDFLAGS@ $(LDLIB)
+SRF_FastqConverter_SOURCES = SRF_FastqConverter.cc
+SRF_FastqConverter_LDADD = $(top_builddir)/SRF/base/libsrf.a  $(top_builddir)/ZTR/src/libztr.a @LDFLAGS@ $(LDLIB)
 INCLUDES = -I$(top_srcdir)/SRF/base -I$(top_srcdir)/ZTR/src
 LDLIB = -lstdc++
 all: all-am
@@ -226,6 +234,9 @@ clean-binPROGRAMS:
 SRF_FastLikeConverter$(EXEEXT): $(SRF_FastLikeConverter_OBJECTS) $(SRF_FastLikeConverter_DEPENDENCIES) 
 	@rm -f SRF_FastLikeConverter$(EXEEXT)
 	$(CXXLINK) $(SRF_FastLikeConverter_LDFLAGS) $(SRF_FastLikeConverter_OBJECTS) $(SRF_FastLikeConverter_LDADD) $(LIBS)
+SRF_FastqConverter$(EXEEXT): $(SRF_FastqConverter_OBJECTS) $(SRF_FastqConverter_DEPENDENCIES) 
+	@rm -f SRF_FastqConverter$(EXEEXT)
+	$(CXXLINK) $(SRF_FastqConverter_LDFLAGS) $(SRF_FastqConverter_OBJECTS) $(SRF_FastqConverter_LDADD) $(LIBS)
 SRF_Reader$(EXEEXT): $(SRF_Reader_OBJECTS) $(SRF_Reader_DEPENDENCIES) 
 	@rm -f SRF_Reader$(EXEEXT)
 	$(CXXLINK) $(SRF_Reader_LDFLAGS) $(SRF_Reader_OBJECTS) $(SRF_Reader_LDADD) $(LIBS)
@@ -240,6 +251,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SRF_FastLikeConverter.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SRF_FastqConverter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SRF_Reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SRF_ZtrReader.Po@am__quote@
 

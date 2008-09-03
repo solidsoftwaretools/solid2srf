@@ -1,234 +1,300 @@
 //
-#include <ios>
-#include <stddef.h>
-#include <ZTR_RetrieveChunk.hh>
-#include <ZTR_ChunkList.hh>
-#include <SRF_File.hh>
-#include <SRF_Block.hh>
-#include <SRF_ContainerHeader.hh>
-#include <SRF_DataBlockHeader.hh>
-#include <SRF_Read.hh>
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <string>
 #include <cstring>
-#include <stdlib.h>
+#include <cstdlib>
+#include <vector>
 
-//g++ -DHAVE_CONFIG_H -I. -I. -I../.. -I../../SRF/base -I../../ZTR/src    -g -O2 -Wall -Wstrict-aliasing=2  -MT SRF_FastqConverter.o -MD -MP -MF ".deps/SRF_FastqConverter.Tpo" -c -o SRF_FastqConverter.o SRF_FastqConverter.cc;
-//g++  -g -O2 -Wall -Wstrict-aliasing=2    -o SRF_FastqConverter  SRF_FastqConverter.o ../../SRF/base/libsrf.a  ../../ZTR/src/libztr.a  -lstdc++ -lm
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <functional>
+#include <iterator>
+
+#include <stddef.h>
+
+#include "ZTR_RetrieveChunk.hh"
+#include "ZTR_ChunkList.hh"
+#include "SRF_File.hh"
+#include "SRF_Block.hh"
+#include "SRF_ContainerHeader.hh"
+#include "SRF_DataBlockHeader.hh"
+#include "SRF_Read.hh"
+
+/**
+ * Utility function to generate FASTQ format strings from bases and quals
+ */
+
+void
+streamFastQ ( const std::string readId,
+              const std::string &baseString, const ZTR_Data& qualData,
+              std::ostream &os )
+{
+
+     // TODO - Make this an option?
+     // Scan for empty tags
+     using std::find_if;
+     // baseString starts with read prefix, ends with newline
+     std::string::const_iterator nonPad = find_if(baseString.begin() + 1, baseString.end() - 1,
+                                                  std::bind1st( std::not_equal_to<char>(), '.'));
+     if( nonPad == (baseString.end() - 1) ) { return; }
+
+     std::ostringstream oss;
+     oss << '@' << readId << std::endl;
+     oss << baseString; // basestring has embedded newline
+     oss << '+' << std::endl;  // readId need not be repeated
+     oss << '!'; // Padding quality value for T/G prefix
+
+     using std::transform;
+     // NB - Conversion to char is a special case, and is always allowed implicitly
+     transform(qualData.ints.begin(), qualData.ints.end(),
+               std::ostream_iterator<char>(oss),
+               std::bind2nd( std::plus<char>(), 041)); // 041 (octal) == 33 (decimal) == '!' (ascii)
+
+     oss << std::endl;
+
+     // Flush string stream to provided output handle
+     os << oss.str();
+}
+
 
 int
 main(int argc, char* argv[])
 {
-    if ( argc < 3 )
-    {
-        std::cout << "Usage: reader <input file> <output file>\n";
-        //std::cout << "<split paired end data> - TRUE or FALSE\n";
-        std::cout << "Optional arguments:\n";
-        std::cout << "<delete N chars from readId start> (0 is default)\n";
-        std::cout << "<append seq name from REGN to read id> TRUE/FALSE\n";
-        std::cout << " - set to TRUE for paired end data and FALSE for single end data\n";
-        //std::cout << "<chunk type> e.g. BASE (BASE is default)\n";
-        //std::cout << "KEY=VALUE e.g. TYPE=0FAM (default: 1st match returned\n";
-        exit(1);
-    }
+     if ( argc < 3 )
+     {
+          std::cout << "Usage: reader <input file> <output file>\n";
+          std::cout << "<split paired end data> - TRUE or FALSE\n";
+          std::cout << "Optional arguments:\n";
+          std::cout << "<delete N chars from readId start> (0 is default)\n";
+          std::cout << "<append seq name from REGN to read id> (TRUE)/FALSE\n";
+          exit(1);
+     }
 
-    SRF_FileOpenType mode = SRF_FileOpenTypeRead;
-    SRF_File file( argv[1], mode );
-    if ( !file.open() )
-    {
-        std::cout << "ERROR: Unable to open input file\n";
-        exit(1);
-    }
+     SRF_File file( argv[1], SRF_FileOpenTypeRead );
+     if ( !file.open() )
+     {
+          std::cout << "ERROR: Unable to open input file\n";
+          exit(1);
+     }
 
-    std::string outputFileBase( argv[2] );
-    SRF_File* output1 = NULL;
-    SRF_File* output2 = NULL;
-    std::string pairedEndStr( "FALSE" ); //argv[3] );
-    bool pairedEndData = FALSE;
-    SRF_FileOpenType outMode = SRF_FileOpenTypeWrite;
-    if ( pairedEndStr == "TRUE" )
-    {
-        std::cerr << "Not implemented yet." << std::endl;
-        exit(1);
-        pairedEndData = TRUE;
-        std::string out1 = outputFileBase + ".1";
-        std::string out2 = outputFileBase + ".2";
-        output1 = new SRF_File( out1.c_str(), outMode );
-        output2 = new SRF_File( out2.c_str(), outMode );
+     std::string outputFileBase( argv[2] );
+     std::string pairedEndStr( argv[3] );
+     bool pairedEndData = FALSE;
 
-        if (!output1->open() )
-        {
-            std::cout << "ERROR: Writer can't open output file" <<
-                         out1 << std::endl;
-            exit( -1 );
-        }
+     SRF_File* output1 = NULL;
+     SRF_File* output2 = NULL;
 
-        if (!output2->open() )
-        {
-            std::cout << "ERROR: Writer can't open output file" <<
-                         out2 << std::endl;
-            exit( -1 );
-        }
-    }
-    else
-    {
-        output1 = new SRF_File( outputFileBase.c_str(), outMode );
+     if ( pairedEndStr == "TRUE" )
+     {
+          std::cout << " * Splitting and Writing paired end reads\n";
+          pairedEndData = TRUE;
+          std::string out1 = outputFileBase + ".1"; // F3?
+          std::string out2 = outputFileBase + ".2"; // R3?
 
-        if (!output1->open() )
-        {
-            std::cout << "ERROR: Writer can't open output file" << 
-                         outputFileBase << std::endl;
-            exit( -1 );
-        }
-    }
+          // FIXME - use caution before opening existing files for truncate/write         
+          output1 = new SRF_File( out1.c_str(), SRF_FileOpenTypeWrite );
+          output2 = new SRF_File( out2.c_str(), SRF_FileOpenTypeWrite );
 
-    ZTR_ChunkMatchParams matchParams, matchParams2;
-    matchParams.type = ZTR_ChunkTypeBase;
-    matchParams2.type = ZTR_ChunkTypeCNF1;
-    bool appendReadId = FALSE;
-    int cutReadId = 0;
-    if ( argc > 4 )
-    {
-        cutReadId = atoi( argv[3] );
-        if ( argc > 5 )
-        {
-            std::string appendReadIdStr( argv[4] );
-            if ( appendReadIdStr == "TRUE" )
-            {
-                appendReadId = TRUE;
-            }
-        }
-    }
+          if (!output1->open() )
+          {
+               std::cout << "ERROR: Writer can't open output file" <<
+                    out1 << std::endl;
+               exit( -1 );
+          }
 
-    /*
-    if ( argc > 6 )
-    {
-        std::string chunkType( argv[5] );
-        if ( chunkType == "BASE" )
-        {
-            matchParams.type = ZTR_ChunkTypeBase;
-        }
-        else if ( chunkType == "CNF1" )
-        {
-            matchParams.type = ZTR_ChunkTypeCNF1;
-        }
-        else if ( chunkType == "SAMP" )
-        {
-            matchParams.type = ZTR_ChunkTypeSAMP;
-        }
-        else if ( chunkType == "REGN" )
-        {
-            matchParams.type = ZTR_ChunkTypeREGN;
-        }
-        else
-        {
-            std::cout << "ERROR: Unknown chunk type: must be one of BASE, CNF1, SAMP or REGN" <<std::endl;
-            exit( -1 );
-        }
-    }
-    */
+          if (!output2->open() )
+          {
+               std::cout << "ERROR: Writer can't open output file" <<
+                    out2 << std::endl;
+               exit( -1 );
+          }
+     }
+     else
+     {
+          output1 = new SRF_File( outputFileBase.c_str(), SRF_FileOpenTypeWrite );
+          if (!output1->open() )
+          {
+               std::cout << "ERROR: Writer can't open output file" <<
+                    outputFileBase << std::endl;
+               exit( -1 );
+          }
+     }
 
-    if ( argc == 8 )
-    {
-        std::string keyValue( argv[5] ), key, value;
+     // Defaults for optional parameters
+     bool appendReadId = TRUE;
+     int cutReadId = 0;
+     if ( argc > 4 )
+     {
+          cutReadId = atoi( argv[4] );
+          std::cout << " * Will cut " << cutReadId << " chars from each read." << std::endl;
+          if ( argc > 5 )
+          {
+               std::string appendReadIdStr( argv[5] );
+               if ( appendReadIdStr == "TRUE" )
+               {
+                    appendReadId = TRUE;
+                    std::cout << " * Will append tag ID to reads." << std::endl;               }
+          }
+     }
 
-        int pos = keyValue.find('=');
-        key.assign( keyValue, 0, pos );
-        value.assign( keyValue, (pos+1), keyValue.size() );
+     ZTR_ChunkMatchParams matchParamsBase, matchParamsQual;
+     matchParamsBase.type = ZTR_ChunkTypeBase;
+     matchParamsQual.type = ZTR_ChunkTypeCNF1;
 
-        matchParams.metadata.setMetadata( key, value );
-    }
-    
-    SRF_ContainerHeader* currContainer = NULL;
-    SRF_DataBlockHeader* currDataBlockHeader = NULL;
+     SRF_ContainerHeader* currContainer = NULL;
+     SRF_DataBlockHeader* currDataBlockHeader = NULL;
 
-    while ( file.getFile().peek() != EOF )
-    {
-        SRF_Block* block = NULL;
-        SRF_BlockType blockType = SRF_GetNewBlock( file.getFile(),
-                                                   ADOPT &block );
-        if ( blockType == SRF_BlockTypeNone )
-        {
-            std::cout << "ERROR: Unable to read block\n";
-            exit(1);
-        }
+     int readCount = 0;
+     std::cout << " * Starting parse of SRF file." << std::endl;
+     while ( file.getFile().peek() != EOF )
+     {
+          SRF_Block* block = NULL;
+          SRF_BlockType blockType = SRF_GetNewBlock( file.getFile(),
+                                                     ADOPT &block );
 
-        if ( blockType == SRF_BlockTypeContainerHeader )
-        {
-            if ( currContainer != NULL )
-            {
-                delete currContainer;
-            }
-            currContainer = (SRF_ContainerHeader*) block;
-        }
-        else if ( blockType == SRF_BlockTypeDataBlockHeader )
-        {
-            if ( currDataBlockHeader != NULL )
-            {
-                delete currDataBlockHeader;
-            }
-            currDataBlockHeader = (SRF_DataBlockHeader*) block;
-        }
-        else if ( blockType == SRF_BlockTypeDataBlock )
-        {
-            SRF_Read read( currContainer, currDataBlockHeader,
+          if( blockType == SRF_BlockTypeContainerHeader ) {
+               if ( currContainer != NULL )
+               {
+                    delete currContainer;
+               }
+               currContainer = (SRF_ContainerHeader*) block;
+
+               // Verbose, diagnostic output from Container Header
+               // One per file
+               std::cout << " * Container Header. Format: SRF v"
+                         << currContainer->getFormatVersion() << std::endl;
+               std::cout << "   - Base Caller: " 
+                         << currContainer->getBaseCaller() 
+                         << " v" << currContainer->getBaseCallerVersion()
+                         << std::endl;
+          }
+          else if ( blockType == SRF_BlockTypeDataBlockHeader ) {
+               if ( currDataBlockHeader != NULL )
+               {
+                    delete currDataBlockHeader;
+               }
+               currDataBlockHeader = (SRF_DataBlockHeader*) block;
+
+               // Verbose, diagnostic output from DBH. Gives idea of progress during parsing
+               // Many per file
+               std::cout << " * Data Block Header. Prefix: '" 
+                         << currDataBlockHeader->getPrefix() 
+                         << "'" << std::endl;
+          }
+          else if ( blockType == SRF_BlockTypeXMLBlock ) {
+               std::cout << " * SRF file has XML block\n";
+               //  TODO - Output xml file
+
+          }
+          else if ( blockType == SRF_BlockTypeDataBlock ) {
+
+              if ( currContainer == NULL || currDataBlockHeader == NULL )
+              {
+                  // Sanity check for state machine
+                  std::cerr << "SRF ERROR: Got Data Block before Container Header and Data Block Header."
+                            << std::endl;
+                  exit(1);
+              }
+
+               SRF_Read read( currContainer, currDataBlockHeader,
                               ABANDON (SRF_DataBlock*) block );
 
-            const std::string& ztrBlob = read.getData();
-            ZTR_ChunkList chunkList;
-            if ( !chunkList.extract( ztrBlob ) )
-            {
-                std::cout << "ERROR: Unable to read blob\n";
-                exit(1);
-            }
+               readCount++;
 
-            ZTR_RetrieveChunk retrieveChunk, retrieveChunk2;
-	    retrieveChunk2.setUseFastQ();
+               const std::string& ztrBlob = read.getData();
+               ZTR_ChunkList chunkList;
+               if ( !chunkList.extract( ztrBlob ) )
+               {
+                    std::cout << "ERROR: Unable to read chunks from ZTR blob\n";
+                    exit(1);
+               }
 
-	    bool c1Return = !retrieveChunk.extract( chunkList,
-						    matchParams,
-						    pairedEndData );
-            if ( !retrieveChunk2.extract( chunkList,
-					  matchParams2,
-					  pairedEndData ) || c1Return )
-            {
-                std::cout << "ERROR: Unable to find requested data\n";
-                exit(1);
-            }
+               ZTR_RetrieveChunk baseChunk, qualChunk;
+               if ( !baseChunk.extract( chunkList,
+                                        matchParamsBase,
+                                        pairedEndData ) )
+               {
+                   std::cout << "ERROR: Unable to find base call data\n";
+                   exit(1);
+               }
+               if ( !qualChunk.extract( chunkList,
+                                        matchParamsQual,
+                                        pairedEndData ) )
+               {
+                   std::cout << "ERROR: Unable to find quality data\n";
+                    exit(1);
+               }
 
-            std::string readId = read.getReadId();
-            if ( cutReadId > 0 )
-            {
-                readId.erase( 0, cutReadId );
-            }
-            std::string readId2 = readId;
-            if ( appendReadId )
-            {
-                readId += '_' + retrieveChunk.getPairedEndName1();
-            }
-            (output1->getFile()) << "@" << readId << std::endl;
-            (output1->getFile()) << retrieveChunk.getDataForOutput();
-	    (output1->getFile()) << "+" << std::endl;
-	    (output1->getFile()) << retrieveChunk2.getDataForOutput();
-            if ( pairedEndData )
-            {
-                (output2->getFile())
-                    << retrieveChunk.getData2of2ForOutput();
-            }
-        }
-        else if ( blockType == SRF_BlockTypeNullIndex )
-        {
-        }
-        else
-        {
-            std::cout << "ERROR: Unknown block type\n";
-            exit(1);
-        }
-    }
+               std::string readId = read.getReadId();
+               if ( cutReadId > 0 )
+               {
+                    readId.erase( 0, cutReadId );
+               }
+               std::string readId2 = readId;
 
-    delete currContainer;
-    delete currDataBlockHeader;
-    DELETE( output1 );
-    DELETE( output2 );
+               // foreach region
+               // For now, assume 1 or 2 regions, frag or mate pair
+
+               if( appendReadId ) {
+                    readId += '_' + baseChunk.getPairedEndName1();
+               }
+               streamFastQ(readId,
+                           baseChunk.getDataForOutput(),
+                           qualChunk.getData(),
+                           output1->getFile());
+
+               if ( pairedEndData )
+               {
+                    if( appendReadId ) {
+                         readId2 += '_' + baseChunk.getPairedEndName2();
+                    }
+                    streamFastQ(readId2,
+                                baseChunk.getData2of2ForOutput(),
+                                qualChunk.getData2of2(),
+                                output2->getFile());
+               }
+          }
+          else if ( blockType == SRF_BlockTypeNone )
+          {
+               std::cout << "ERROR: Unable to read block\n";
+          }
+          else if ( blockType == SRF_BlockTypeNullIndex)
+          {
+               std::cout << " * SRF Null Index Block.\n";
+          }
+          else
+          {
+               std::cout << "ERROR: Unknown block type: " << blockType << "\n";
+               //exit(1);  // No longer fatal, but highly unusual.
+          }
+
+
+
+          /* Verbose output. Panel numbers from DBH Prefix are better...
+          if(readCount && (readCount % 100000 == 0)) {
+               std::cout << " - Processed " << readCount << " reads." << std::endl;
+          }
+          */
+          
+          /* DEBUG ONLY
+          if(readCount && (readCount % 100000 == 0))
+          {
+              std::cerr << "ABORTING EARLY FOR DEBUGGING\n";
+              exit(0);
+          }
+          */
+     }
+
+     std::cout << " * Finished. " << std::endl;
+     std::cout << " * Processed " << readCount << " reads." << std::endl;
+
+     if ( currContainer != NULL ) delete currContainer;
+     if ( currDataBlockHeader != NULL ) delete currDataBlockHeader;
+
+     if ( output1 != NULL ) DELETE( output1 );  // This should never be null
+     if ( output2 != NULL ) DELETE( output2 );
+
 }
