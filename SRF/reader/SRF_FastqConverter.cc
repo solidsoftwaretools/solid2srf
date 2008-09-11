@@ -33,13 +33,7 @@ streamFastQ ( const std::string readId,
               std::ostream &os )
 {
 
-     // TODO - Make this an option?
-     // Scan for empty tags
-     using std::find_if;
-     // baseString starts with read prefix, ends with newline
-     std::string::const_iterator nonPad = find_if(baseString.begin() + 1, baseString.end() - 1,
-                                                  std::bind1st( std::not_equal_to<char>(), '.'));
-     if( nonPad == (baseString.end() - 1) ) { return; }
+    if( baseString.find_first_not_of(".",1) >= (baseString::npos - 1) ) return;
 
      std::ostringstream oss;
      oss << '@' << readId << std::endl;
