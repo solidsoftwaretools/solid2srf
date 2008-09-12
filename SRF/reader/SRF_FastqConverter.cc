@@ -29,28 +29,33 @@
 
 void
 streamFastQ ( const std::string readId,
-              const std::string &baseString, const ZTR_Data& qualData,
+              const std::string &baseString, const ZTR_Data &qualData,
               std::ostream &os )
 {
 
-    if( baseString.find_first_not_of(".",1) >= (baseString::npos - 1) ) return;
+    // Ignore first base (prefix) and last char ('\n')
+    size_t idx = baseString.find_first_not_of(".",1);
+    if( (idx == baseString.size()) || (idx == std::string::npos) )
+    {
+        return;
+    }
 
-     std::ostringstream oss;
-     oss << '@' << readId << std::endl;
-     oss << baseString; // basestring has embedded newline
-     oss << '+' << std::endl;  // readId need not be repeated
-     oss << '!'; // Padding quality value for T/G prefix
+    std::ostringstream oss;
+    oss << '@' << readId << std::endl;
+    oss << baseString; // basestring has embedded newline
+    oss << '+' << std::endl;  // readId need not be repeated
+    oss << '!'; // Padding quality value for T/G prefix
 
-     using std::transform;
-     // NB - Conversion to char is a special case, and is always allowed implicitly
-     transform(qualData.ints.begin(), qualData.ints.end(),
-               std::ostream_iterator<char>(oss),
-               std::bind2nd( std::plus<char>(), 041)); // 041 (octal) == 33 (decimal) == '!' (ascii)
+    using std::transform;
+    // NB - Conversion to char is a special case, and is always allowed implicitly
+    transform(qualData.ints.begin(), qualData.ints.end(),
+              std::ostream_iterator<char>(oss),
+              std::bind2nd( std::plus<char>(), 041)); // 041 (octal) == 33 (decimal) == '!' (ascii)
 
-     oss << std::endl;
+    oss << std::endl;
 
-     // Flush string stream to provided output handle
-     os << oss.str();
+    // Flush string stream to provided output handle
+    os << oss.str();
 }
 
 
@@ -88,7 +93,7 @@ main(int argc, char* argv[])
           std::string out1 = outputFileBase + ".1"; // F3?
           std::string out2 = outputFileBase + ".2"; // R3?
 
-          // FIXME - use caution before opening existing files for truncate/write         
+          // FIXME - use caution before opening existing files for truncate/write
           output1 = new SRF_File( out1.c_str(), SRF_FileOpenTypeWrite );
           output2 = new SRF_File( out2.c_str(), SRF_FileOpenTypeWrite );
 
@@ -160,8 +165,8 @@ main(int argc, char* argv[])
                // One per file
                std::cout << " * Container Header. Format: SRF v"
                          << currContainer->getFormatVersion() << std::endl;
-               std::cout << "   - Base Caller: " 
-                         << currContainer->getBaseCaller() 
+               std::cout << "   - Base Caller: "
+                         << currContainer->getBaseCaller()
                          << " v" << currContainer->getBaseCallerVersion()
                          << std::endl;
           }
@@ -174,8 +179,8 @@ main(int argc, char* argv[])
 
                // Verbose, diagnostic output from DBH. Gives idea of progress during parsing
                // Many per file
-               std::cout << " * Data Block Header. Prefix: '" 
-                         << currDataBlockHeader->getPrefix() 
+               std::cout << " * Data Block Header. Prefix: '"
+                         << currDataBlockHeader->getPrefix()
                          << "'" << std::endl;
           }
           else if ( blockType == SRF_BlockTypeXMLBlock ) {
@@ -272,7 +277,7 @@ main(int argc, char* argv[])
                std::cout << " - Processed " << readCount << " reads." << std::endl;
           }
           */
-          
+
           /* DEBUG ONLY
           if(readCount && (readCount % 100000 == 0))
           {
