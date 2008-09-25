@@ -6,6 +6,6 @@ man_MANS = README
 
 pkginclude_HEADERS =
 
-bin_SCRIPTS = spchexport2.py
+bin_SCRIPTS = utils/spchexport2.py utils/split_solid_reads.py
 
-EXTRA_DIST = spchexport2.py testData/APPLIED_BIOSYSTEMS_DATA_DISCLAIMER.txt
+EXTRA_DIST = utils/spchexport2.py testData/APPLIED_BIOSYSTEMS_DATA_DISCLAIMER.txt

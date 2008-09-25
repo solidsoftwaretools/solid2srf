@@ -305,7 +305,7 @@ SRF_SOLiDpairedEndWriter::insertDummy(
     }
     else
     {
-        std::cout << "ERROR: s/w error" << std::endl;
+        std::cerr << "ERROR: s/w error" << std::endl;
         exit(-1);
     }
 
@@ -421,14 +421,14 @@ SRF_SOLiDpairedEndWriter::writeDBH( void )
     SRF_DataBlockHeader dataBlockHeader;
     if ( !dataBlockHeader.setup( uniqueIdPrefix, blob ) )
     {
-        std::cout << "ERROR: Writer can't set up DBH at Read Id:" <<
+        std::cerr << "ERROR: Writer can't set up DBH at Read Id:" <<
                 dataSetsFile1[1].partialReadId << std::endl;
         return FALSE;
     }
 
     if ( !dataBlockHeader.write( outputFile->getFile() ) )
     {
-        std::cout << "ERROR: Writer can't write DBH at Read Id:" <<
+        std::cerr << "ERROR: Writer can't write DBH at Read Id:" <<
                 dataSetsFile1[1].partialReadId << std::endl;
         return FALSE;
     }
@@ -498,7 +498,7 @@ SRF_SOLiDpairedEndWriter::writeDB( void )
     if ( !createBaseChunk( dataSetsFile1[1].calls + dataSetsFile2[1].calls,
                            blob ) )
     {
-        std::cout << "ERROR: Writer can't set up Base Chunk at Read Id:" <<
+        std::cerr << "ERROR: Writer can't set up Base Chunk at Read Id:" <<
                         dataSetsFile1[1].panelId <<
                         dataSetsFile1[1].readIdSuffix <<  std::endl;
         return FALSE;
@@ -511,7 +511,7 @@ SRF_SOLiDpairedEndWriter::writeDB( void )
     if ( confValuesJoined.size() > 0 && !createCnf1Chunk( confValuesJoined,
                                                           blob ))
     {
-        std::cout << "ERROR: Writer can't set up CNF1 Chunk at Read Id:" <<
+        std::cerr << "ERROR: Writer can't set up CNF1 Chunk at Read Id:" <<
                         dataSetsFile1[1].panelId <<
                         dataSetsFile1[1].readIdSuffix <<  std::endl;
         return FALSE;
@@ -543,7 +543,7 @@ SRF_SOLiDpairedEndWriter::writeDB( void )
         if ( intensityDataJoined[0].intensityValues.size() > 0 &&
              !createSampChunks( intensityDataJoined, blob ) )
         {
-            std::cout << "ERROR: Writer can't set up SAMP Chunks at Read Id:" <<
+            std::cerr << "ERROR: Writer can't set up SAMP Chunks at Read Id:" <<
                             dataSetsFile1[1].panelId <<
                             dataSetsFile1[1].readIdSuffix <<  std::endl;
             return FALSE;
@@ -557,7 +557,7 @@ SRF_SOLiDpairedEndWriter::writeDB( void )
     std::string readId = dataSetsFile1[1].readIdSuffix.substr( 0, find );
     if ( !dataBlock.setup( readId, blob ) )
     {
-        std::cout << "ERROR: Writer can't set up DB at Read Id:" <<
+        std::cerr << "ERROR: Writer can't set up DB at Read Id:" <<
                         dataSetsFile1[1].panelId <<
                         dataSetsFile1[1].readIdSuffix <<  std::endl;
         return FALSE;
@@ -565,7 +565,7 @@ SRF_SOLiDpairedEndWriter::writeDB( void )
 
     if ( !dataBlock.write( outputFile->getFile() ) )
     {
-        std::cout << "ERROR: Writer can't write DB at Read Id:" <<
+        std::cerr << "ERROR: Writer can't write DB at Read Id:" <<
                         dataSetsFile1[1].panelId <<
                         dataSetsFile1[1].readIdSuffix <<  std::endl;
         return FALSE;

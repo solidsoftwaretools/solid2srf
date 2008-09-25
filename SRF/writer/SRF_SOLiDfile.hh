@@ -49,6 +49,7 @@ class SRF_SOLiDfile
 
     private:
         bool fileOpen;
+        std::string filename;
 };
 
 #endif

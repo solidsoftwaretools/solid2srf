@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(solid2srf, 0.7.3, [http://solidsoftwaretools.com/])
+AC_INIT(solid2srf, 0.7.4, [http://solidsoftwaretools.com/])
 AM_CONFIG_HEADER(srf_config.h)
 AM_INIT_AUTOMAKE([foreign])
 

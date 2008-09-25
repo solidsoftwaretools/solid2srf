@@ -29,28 +29,29 @@ SRF_SOLiDfile::~SRF_SOLiDfile( void )
 #ifdef HAVE_EXT_STDIO_FILEBUF_H  
     //pclose(fp); // Close underlying fd first
     if(pipe != NULL) {
-        // Close wrapping stream
+	// Close wrapping stream
         (*pipe).close();
         DELETE( pipe );
     }
     fp = NULL;
 #endif
     if(file != NULL) {
-        // istream has no close()
-        if(std::ifstream *f2 = dynamic_cast<std::ifstream *>(file)) {
-            // But if it's really a ifstream, we can close it.
-            (*f2).close();
-            DELETE( f2 );
-        }
-        DELETE( file );
+	// // istream has no close()
+	// if(std::ifstream *f2 = dynamic_cast<std::ifstream *>(file)) {
+	//   // But if it's really a ifstream, we can close it.
+	//   (*f2).close();
+	// }
+	DELETE( file );
     }
 }
 
 bool
-SRF_SOLiDfile::open( const std::string& filename,
+SRF_SOLiDfile::open( const std::string& inputfilename,
                      const std::string& title,
                      bool titleOverride )
 {
+    filename = inputfilename;
+
     size_t found = filename.rfind(".gz");
     if (found != std::string::npos) {
 #ifdef HAVE_EXT_STDIO_FILEBUF_H
@@ -60,7 +61,7 @@ SRF_SOLiDfile::open( const std::string& filename,
         pipe = new stdio_filebuf<char>( fp, std::ios::in, CHUNK );
         file = new std::istream(pipe);
 #else
-        std::cout << "ERROR: Unable to read gz file. Recompile with g++ extensions" << std::endl;
+        std::cerr << "ERROR: Unable to read gz file. Recompile with g++ extensions" << std::endl;
         return FALSE;
 #endif // STDIO_FILEBUF_H
     } else {
@@ -71,13 +72,13 @@ SRF_SOLiDfile::open( const std::string& filename,
     if ( !(*file).good() )
     {
         DELETE( file );
-        std::cout << "ERROR: Writer can't open input file"
+        std::cerr << "ERROR: Writer can't open input file"
                   << filename << std::endl;
         return FALSE;
     }
 
     std::string titleInFile = "";
-    while( (*file).peek() != '>' )
+    while( (*file).peek() == '#' )
     {
         // if present, the title line has the following form
         // # Title: <title>
@@ -93,19 +94,16 @@ SRF_SOLiDfile::open( const std::string& filename,
     }
 
     // titles match?
-    if ( titleInFile != title )
+    if ( titleInFile.empty() || titleInFile != title )
     {
+	std::cerr << "WARNING: titles don't match '" << title << "' vs '"
+		  << titleInFile << "'" << std::endl;
         if ( !titleOverride )
-        {
-            std::cout << "ERROR: titles don't match " << title << " "
-                      << titleInFile << std::endl;
-            std::cout << "Override with -to argument"
+	{
+            std::cerr << "ERROR: title mismatch. Override with -to argument"
                  << std::endl;
             return FALSE;
         }
-
-        std::cout << "WARNING: titles don't match " << title << " "
-                  << titleInFile << std::endl;
     }
 
     fileOpen = TRUE;
@@ -132,8 +130,12 @@ SRF_SOLiDfile::readNextBlockCommon( const std::string& cfastaPartialReadId )
     }
     if ( (*file).peek() != '>' )
     {
-        std::cout << "ERROR: unexpected file format around readId: " <<
+        std::cerr << "ERROR: unexpected file format around readId: " <<
                 cfastaPartialReadId << std::endl;
+	std::string line;
+	std::getline( (*file), line);
+	std::cerr << "BAD READ: " << line << std::endl;
+	std::cerr << "File: " << filename << std::endl;
         return FALSE;
     }
 
@@ -143,9 +145,10 @@ SRF_SOLiDfile::readNextBlockCommon( const std::string& cfastaPartialReadId )
     (*file).get(); // new line char
     if ( partialReadId != cfastaPartialReadId )
     {
-        std::cout << "ERROR: readIds don't match. CFASTA: " <<
+        std::cerr << "ERROR: readIds don't match. CFASTA: " <<
                 cfastaPartialReadId << std::endl
              << "QUAL: " << partialReadId << std::endl;
+	std::cerr << "File: " << filename << std::endl;
         return FALSE;
     }
 

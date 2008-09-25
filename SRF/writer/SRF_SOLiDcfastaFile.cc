@@ -19,7 +19,12 @@ SRF_SOLiDcfastaFile::readNextBlock( SRF_SOLiDdataSet* dataSet )
 {
     if ( (*file).peek() != '>' )
     {
-        std::cout << "ERROR: unexpected file format in cfasta file\n";
+        std::cerr << "ERROR: unexpected file format in cfasta file\n";
+	std::string line;
+	std::getline( (*file), line);
+	std::cerr << "BADDATA: " << line << std::endl;
+	std::getline( (*file), line);
+	std::cerr << "BADDATA: " << line << std::endl;
         return FALSE;
     }
 
@@ -31,7 +36,7 @@ SRF_SOLiDcfastaFile::readNextBlock( SRF_SOLiDdataSet* dataSet )
     int firstUnderscore = dataSet->partialReadId.find( '_' );
     if ( firstUnderscore == -1 )
     {
-        std::cout << "ERROR: unexpected file format at Read Id:" <<
+        std::cerr << "ERROR: unexpected file format at Read Id:" <<
                 dataSet->partialReadId << std::endl;
         exit(-1);
     }

@@ -56,7 +56,7 @@ main(int argc, char **argv)
 // write SRF container header
     if ( !writer->writeHeaderAndXml() )
     {
-        std::cout << "ERROR: failed to write SRF header\n";
+        std::cerr << "ERROR: failed to write SRF header\n";
         delete writer;
         exit( -1 );
     }
@@ -68,7 +68,7 @@ main(int argc, char **argv)
     {
         if ( !writer->writeNextBlock() )
         {
-            std::cout << "ERROR: failed to write block\n";
+            std::cerr << "ERROR: failed to write block\n";
             delete writer;
             exit(-1);
         }
@@ -82,7 +82,7 @@ main(int argc, char **argv)
 
     if (!allFilesEnd)
     {
-        std::cout << "ERROR: files have different content\n";
+        std::cerr << "ERROR: files have different content\n";
         delete writer;
         exit(-1);
     }
@@ -91,7 +91,7 @@ main(int argc, char **argv)
     std::cerr << "Writing SRF footer\n";
     if ( !writer->writeFooter() )
     {
-        std::cout << "ERROR: failed to write SRF footer\n";
+        std::cerr << "ERROR: failed to write SRF footer\n";
         delete writer;
         exit( -1 );
     }

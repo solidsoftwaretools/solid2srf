@@ -168,8 +168,8 @@ AUTOMAKE_OPTIONS = foreign no-dependencies
 SUBDIRS = ZTR SRF
 man_MANS = README
 pkginclude_HEADERS = 
-bin_SCRIPTS = spchexport2.py
-EXTRA_DIST = spchexport2.py testData/APPLIED_BIOSYSTEMS_DATA_DISCLAIMER.txt
+bin_SCRIPTS = utils/spchexport2.py utils/split_solid_reads.py
+EXTRA_DIST = utils/spchexport2.py testData/APPLIED_BIOSYSTEMS_DATA_DISCLAIMER.txt
 all: srf_config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -385,7 +385,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/testData
+	$(mkdir_p) $(distdir)/testData $(distdir)/utils
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
