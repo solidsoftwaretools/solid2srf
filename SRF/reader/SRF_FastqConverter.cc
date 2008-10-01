@@ -1,4 +1,4 @@
-//
+/ ired/
 
 #include <cstdio>
 #include <string>
@@ -35,7 +35,7 @@ streamFastQ ( const std::string readId,
 
     // Ignore first base (prefix) and last char ('\n')
     size_t idx = baseString.find_first_not_of(".",1);
-    if( (idx == baseString.size()) || (idx == std::string::npos) )
+    if( (idx == baseString.size() - 1) || (idx == std::string::npos) )
     {
         return;
     }
@@ -81,6 +81,7 @@ main(int argc, char* argv[])
 
      std::string outputFileBase( argv[2] );
      std::string pairedEndStr( argv[3] );
+
      bool pairedEndData = FALSE;
 
      SRF_File* output1 = NULL;
