@@ -27,21 +27,19 @@ SRF_SOLiDfile::SRF_SOLiDfile( void )
 SRF_SOLiDfile::~SRF_SOLiDfile( void )
 {
 #ifdef HAVE_EXT_STDIO_FILEBUF_H  
-    //pclose(fp); // Close underlying fd first
-    if(pipe != NULL) {
-	// Close wrapping stream
-        (*pipe).close();
+    if(pipe != NULL && fp != NULL) {
+        pclose(fp); // Close underlying fd first
         DELETE( pipe );
+	fp = NULL;
     }
-    fp = NULL;
 #endif
     if(file != NULL) {
 	// // istream has no close()
-	// if(std::ifstream *f2 = dynamic_cast<std::ifstream *>(file)) {
-	//   // But if it's really a ifstream, we can close it.
-	//   (*f2).close();
-	// }
-	DELETE( file );
+	if(std::ifstream *f2 = dynamic_cast<std::ifstream *>(file)) {
+	  // But if it's really a ifstream, we can close it.
+	  (*f2).close();
+	}
+        DELETE( file );
     }
 }
 
