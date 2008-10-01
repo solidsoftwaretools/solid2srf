@@ -1,4 +1,4 @@
-/ ired/
+//
 
 #include <cstdio>
 #include <string>
