@@ -520,7 +520,8 @@ def splitFile(f, chunksize = 25, start=None, end=None, resume=None):
 
   ## If index:
   index = read.getIndex()
-  if index.isComplete():
+  haveIndex = index.isComplete()
+  if haveIndex:
     print " * Split using existing index"
     panels = index.getPanels()
     # Use start, not min(panels), so chunk numbers are consistent
@@ -574,7 +575,10 @@ def splitFile(f, chunksize = 25, start=None, end=None, resume=None):
     
     sys.stderr.write("Split Complete\n")
       
-  
+  # Didn't have an index before, but it's complete now
+  if not haveIndex and read.index.isComplete():
+    read.index.writeIndex()
+    
   print "Parse complete: %f ms, %f ms" % ( time.time() - t0, time.clock() - t1 )
 
 
