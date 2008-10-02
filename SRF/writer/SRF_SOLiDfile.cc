@@ -26,20 +26,23 @@ SRF_SOLiDfile::SRF_SOLiDfile( void )
 
 SRF_SOLiDfile::~SRF_SOLiDfile( void )
 {
+  // Cleanup is causing segfaults. Need to debug.
+  // For now, skip DELETE in destructor (program is exiting anyway)
+
 #ifdef HAVE_EXT_STDIO_FILEBUF_H  
     if(pipe != NULL && fp != NULL) {
-        pclose(fp); // Close underlying fd first
-        DELETE( pipe );
+        pclose(fp); // Close underlying pipe fd
+        //DELETE( pipe );
 	fp = NULL;
     }
 #endif
     if(file != NULL) {
 	// // istream has no close()
-	if(std::ifstream *f2 = dynamic_cast<std::ifstream *>(file)) {
-	  // But if it's really a ifstream, we can close it.
-	  (*f2).close();
-	}
-        DELETE( file );
+        // if(std::ifstream *f2 = dynamic_cast<std::ifstream *>(file)) {
+	//   // But if it's really a ifstream, we can close it.
+	//   (*f2).close();
+	// }
+        //DELETE( file );	
     }
 }
 
