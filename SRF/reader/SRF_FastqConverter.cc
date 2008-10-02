@@ -128,16 +128,25 @@ main(int argc, char* argv[])
      int cutReadId = 0;
      if ( argc > 4 )
      {
-          cutReadId = atoi( argv[4] );
-          std::cout << " * Will cut " << cutReadId << " chars from each read." << std::endl;
-          if ( argc > 5 )
-          {
-               std::string appendReadIdStr( argv[5] );
-               if ( appendReadIdStr == "TRUE" )
-               {
-                    appendReadId = TRUE;
-                    std::cout << " * Will append tag ID to reads." << std::endl;               }
-          }
+	 cutReadId = atoi( argv[4] );
+	 std::cout << " * Will cut " << cutReadId << " chars from each read." << std::endl;
+	 if ( argc > 5 )
+	 {
+	     std::string appendReadIdStr( argv[5] );
+	     if ( appendReadIdStr == "TRUE" )
+	     {
+		 appendReadId = TRUE;
+	     } else {
+		 appendReadId = FALSE;
+	     }
+	 }
+     }
+
+     if ( appendReadId )
+     {
+	 std::cout << " * Will append tag ID to reads." << std::endl;
+     } else {
+	 std::cout << " * Will NOT append tag ID to reads." << std::endl;
      }
 
      ZTR_ChunkMatchParams matchParamsBase, matchParamsQual;
