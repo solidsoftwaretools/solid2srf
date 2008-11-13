@@ -1,10 +1,11 @@
 //
-#include <ios>
+#include <iostream>
 #include <string>
 #include <sstream>
-#include <ZTR_util.hh>
+#include "ZTR_util.hh"
 
-#define ZTR_MAGIC_NUMBER "\256ZTR\r\n\032\n"
+
+const char* const ZTR_MAGIC_NUMBER = "\256ZTR\r\n\032\n";
 
 void
 ZTR_ReportError( const std::string& errMesg )
@@ -59,4 +60,3 @@ ZTR_ConvertStringToFloatVector( const std::string& valueString,
         }
     }
 }
-
