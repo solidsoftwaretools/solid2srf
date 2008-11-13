@@ -33,30 +33,30 @@ const std::string ZTR_METADATA_NAME("NAME");
 static inline uint16_t ZTR_ByteSwap_16_C(uint16_t val)
 {
     return ((uint16_t) (
-		(uint16_t) ((uint16_t) (val) >> 8) |
-		(uint16_t) ((uint16_t) (val) << 8)));
+                (uint16_t) ((uint16_t) (val) >> 8) |
+                (uint16_t) ((uint16_t) (val) << 8)));
 }
 
 static inline uint32_t ZTR_ByteSwap_32_C(uint32_t val)
 {
     return ((uint32_t) (
-		(((uint32_t) (val) & (uint32_t) 0x000000ffU) << 24) |
-		(((uint32_t) (val) & (uint32_t) 0x0000ff00U) <<  8) |
-		(((uint32_t) (val) & (uint32_t) 0x00ff0000U) >>  8) |
-		(((uint32_t) (val) & (uint32_t) 0xff000000U) >> 24)));
+                (((uint32_t) (val) & (uint32_t) 0x000000ffU) << 24) |
+                (((uint32_t) (val) & (uint32_t) 0x0000ff00U) <<  8) |
+                (((uint32_t) (val) & (uint32_t) 0x00ff0000U) >>  8) |
+                (((uint32_t) (val) & (uint32_t) 0xff000000U) >> 24)));
 }
 
 static inline uint64_t ZTR_ByteSwap_64_C(uint64_t val)
 {
     return ((uint64_t) (
-		(((uint64_t) (val) & (uint64_t) 0x00000000000000ffULL) << 56) |
-		(((uint64_t) (val) & (uint64_t) 0x000000000000ff00ULL) << 40) |
-		(((uint64_t) (val) & (uint64_t) 0x0000000000ff0000ULL) << 24) |
-		(((uint64_t) (val) & (uint64_t) 0x00000000ff000000ULL) <<  8) |
-		(((uint64_t) (val) & (uint64_t) 0x000000ff00000000ULL) >>  8) |
-		(((uint64_t) (val) & (uint64_t) 0x0000ff0000000000ULL) >> 24) |
-		(((uint64_t) (val) & (uint64_t) 0x00ff000000000000ULL) >> 40) |
-		(((uint64_t) (val) & (uint64_t) 0xff00000000000000ULL) >> 56)));
+                (((uint64_t) (val) & (uint64_t) 0x00000000000000ffULL) << 56) |
+                (((uint64_t) (val) & (uint64_t) 0x000000000000ff00ULL) << 40) |
+                (((uint64_t) (val) & (uint64_t) 0x0000000000ff0000ULL) << 24) |
+                (((uint64_t) (val) & (uint64_t) 0x00000000ff000000ULL) <<  8) |
+                (((uint64_t) (val) & (uint64_t) 0x000000ff00000000ULL) >>  8) |
+                (((uint64_t) (val) & (uint64_t) 0x0000ff0000000000ULL) >> 24) |
+                (((uint64_t) (val) & (uint64_t) 0x00ff000000000000ULL) >> 40) |
+                (((uint64_t) (val) & (uint64_t) 0xff00000000000000ULL) >> 56)));
 }
 
 /* Some optimized routines for specific arches */
@@ -67,12 +67,12 @@ static inline uint16_t ZTR_ByteSwap_16_IA32(uint16_t val)
 {
     register uint16_t v;
     if (__builtin_constant_p (val))
-	v = ZTR_ByteSwap_16_C (val);
+        v = ZTR_ByteSwap_16_C (val);
     else
-	__asm__ ("rorw $8, %w0"
-		 : "=r" (v)
-		 : "0" (val)
-		 : "cc"); 
+        __asm__ ("rorw $8, %w0"
+                 : "=r" (v)
+                 : "0" (val)
+                 : "cc"); 
     return v;
 }
 
@@ -80,24 +80,24 @@ static inline uint32_t ZTR_ByteSwap_32_IA32(uint32_t val)
 {
     register uint32_t v;
     if (__builtin_constant_p (val))
-	v = ZTR_ByteSwap_32_C (val);
+        v = ZTR_ByteSwap_32_C (val);
     else
-	__asm__ ("bswap %0"
-		 : "=r" (__v)
-		 : "0" (__x));
+        __asm__ ("bswap %0"
+                 : "=r" (v)
+                 : "0" (val));
     return v;
 }
 static inline uint64_t ZTR_ByteSwap_64_IA32(uint64_t val)
 {
     union { uint64_t ll;
-	uint32_t l[2]; } w,r;
+        uint32_t l[2]; } w,r;
     w.ll = ((uint64_t) (val));
     if (__builtin_constant_p (w.ll))
-	r.ll = ZTR_ByteSwap_64_C (w.ll);
+        r.ll = ZTR_ByteSwap_64_C (w.ll);
     else
     {
-	r.l[0] = ZTR_ByteSwap_32 (w.l[1]);
-	r.l[1] = ZTR_ByteSwap_32 (w.l[0]);
+        r.l[0] = ZTR_ByteSwap_32 (w.l[1]);
+        r.l[1] = ZTR_ByteSwap_32 (w.l[0]);
     }
     return r.ll;
 }
@@ -111,11 +111,11 @@ static inline uint32_t ZTR_ByteSwap_32_X86_64(uint32_t val)
 {
     register uint32_t v;
     if (__builtin_constant_p (val))
-	v = ZTR_ByteSwap_32_C (val);
+        v = ZTR_ByteSwap_32_C (val);
     else
-	__asm__ ("bswapl %0"
-		 : "=r" (v)
-		 : "0" (val));
+        __asm__ ("bswapl %0"
+                 : "=r" (v)
+                 : "0" (val));
     return v;
 }
 
@@ -123,11 +123,11 @@ static inline uint64_t ZTR_ByteSwap_64_X86_64(uint64_t val)
 {
     register uint64_t v;
     if (__builtin_constant_p (val))
-	v = ZTR_ByteSwap_64_C (val);
+        v = ZTR_ByteSwap_64_C (val);
     else
-	__asm__ ("bswapq %0"
-		 : "=r" (v)
-		 : "0" (val));
+        __asm__ ("bswapq %0"
+                 : "=r" (v)
+                 : "0" (val));
     return v;
 }
 
