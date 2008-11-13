@@ -710,6 +710,8 @@ if __name__ == "__main__":
     for f in v.pop(0):
       if f[-4:] == '.idx':
         continue
+      if f[-6:] == '.stats':
+        continue
       print cmd + ": " + f
       splitFile(f, chunksize=opt.chunk, start=opt.start, end=opt.end, resume=opt.resume)
       
