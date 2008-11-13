@@ -1,12 +1,9 @@
 //
 #include <ios>
-#include <stddef.h>
+#include <string>
+
 #include <SRF_Block.hh>
 #include <SRF_File.hh>
-
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 
 int
 main(int argc, char* argv[])
@@ -21,7 +18,7 @@ main(int argc, char* argv[])
     SRF_File file( argv[1], mode );
     if ( !file.open() )
     {
-        std::cout << "Unable to open input file\n";
+        std::cerr << "Unable to open input file\n";
         exit(1);
     }
 
@@ -32,7 +29,7 @@ main(int argc, char* argv[])
                                                    ADOPT &block );
         if ( blockType == SRF_BlockTypeNone )
         {
-            std::cout << "Unable to read block\n";
+            std::cerr << "Unable to read block\n";
             exit(1);
         }
         if ( blockType != SRF_BlockTypeNullIndex )

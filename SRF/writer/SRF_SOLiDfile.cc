@@ -29,21 +29,21 @@ SRF_SOLiDfile::~SRF_SOLiDfile( void )
   // Cleanup is causing segfaults. Need to debug.
   // For now, skip DELETE in destructor (program is exiting anyway)
 
-#ifdef HAVE_EXT_STDIO_FILEBUF_H  
-    if(pipe != NULL && fp != NULL) {
-        pclose(fp); // Close underlying pipe fd
-        //DELETE( pipe );
-	fp = NULL;
-    }
+#ifdef HAVE_EXT_STDIO_FILEBUF_H
+  //if(pipe != NULL && fp != NULL) {
+  //    pclose(fp); // Close underlying pipe fd
+  //    DELETE( pipe );
+  //    fp = NULL;
+  //}
 #endif
-    if(file != NULL) {
-	// // istream has no close()
-        // if(std::ifstream *f2 = dynamic_cast<std::ifstream *>(file)) {
-	//   // But if it's really a ifstream, we can close it.
-	//   (*f2).close();
-	// }
-        //DELETE( file );	
-    }
+  //if(file != NULL) {
+  // // istream has no close()
+  // if(std::ifstream *f2 = dynamic_cast<std::ifstream *>(file)) {
+  //   // But if it's really a ifstream, we can close it.
+  //   (*f2).close();
+  // }
+  //DELETE( file );
+  //}
 }
 
 bool
@@ -97,12 +97,12 @@ SRF_SOLiDfile::open( const std::string& inputfilename,
     // titles match?
     if ( titleInFile.empty() || titleInFile != title )
     {
-	std::cerr << "WARNING: titles don't match '" << title << "' vs '"
-		  << titleInFile << "'" << std::endl;
+        std::cerr << "WARNING: titles don't match '" << title << "' vs '"
+                  << titleInFile << "'" << std::endl;
         if ( !titleOverride )
-	{
+        {
             std::cerr << "ERROR: title mismatch. Override with -to argument"
-                 << std::endl;
+                      << std::endl;
             return FALSE;
         }
     }
@@ -133,10 +133,10 @@ SRF_SOLiDfile::readNextBlockCommon( const std::string& cfastaPartialReadId )
     {
         std::cerr << "ERROR: unexpected file format around readId: " <<
                 cfastaPartialReadId << std::endl;
-	std::string line;
-	std::getline( (*file), line);
-	std::cerr << "BAD READ: " << line << std::endl;
-	std::cerr << "File: " << filename << std::endl;
+        std::string line;
+        std::getline( (*file), line);
+        std::cerr << "BAD READ: " << line << std::endl;
+        std::cerr << "File: " << filename << std::endl;
         return FALSE;
     }
 
@@ -149,7 +149,7 @@ SRF_SOLiDfile::readNextBlockCommon( const std::string& cfastaPartialReadId )
         std::cerr << "ERROR: readIds don't match. CFASTA: " <<
                 cfastaPartialReadId << std::endl
              << "QUAL: " << partialReadId << std::endl;
-	std::cerr << "File: " << filename << std::endl;
+        std::cerr << "File: " << filename << std::endl;
         return FALSE;
     }
 
