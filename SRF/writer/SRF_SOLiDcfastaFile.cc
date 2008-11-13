@@ -1,8 +1,10 @@
 //
+#include <iostream>
 #include <string>
-#include <SRF_util.hh>
-#include <SRF_SOLiDstructs.hh>
-#include <SRF_SOLiDcfastaFile.hh>
+
+#include "SRF_util.hh"
+#include "SRF_SOLiDstructs.hh"
+#include "SRF_SOLiDcfastaFile.hh"
 
 SRF_SOLiDcfastaFile::SRF_SOLiDcfastaFile( void )
 {

@@ -23,18 +23,24 @@
 // 18th March 2007  Asim Siddiqui        created
 //
 
-#define FALSE 0
-#define TRUE 1
-#define ABANDON
-#define ADOPT
+#ifdef HAVE_CONFIG_H
+#  include "srf_config.h"
+#endif
 
-#include <ios>
-#include <iostream>
-#include <fstream>
+#include <iosfwd>
 #include <string>
 #include <vector>
 #include <endian.h>
-#include <srf_config.h>
+
+#ifndef FALSE
+#  define FALSE false
+#endif
+#ifndef TRUE
+#  define TRUE true
+#endif
+
+#define ABANDON
+#define ADOPT
 
 ADOPT char* SRF_cStrToPascalStr( const char* str );
 void SRF_readString( std::istringstream* input, std::string& readString );

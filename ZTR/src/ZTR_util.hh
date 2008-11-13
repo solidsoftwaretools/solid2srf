@@ -4,16 +4,23 @@
 #define ZTR_UTIL_HH
 
 #ifdef HAVE_CONFIG_H
-#include <srf_config.h>
+#include "srf_config.h"
 #endif
+
+// Temporary, until other headers are updated
+#include <iosfwd>
 
 #include <string>
 #include <vector>
 #include <endian.h>
 
 // put in a global include
-#define FALSE false
-#define TRUE true
+#ifndef FALSE
+#  define FALSE false
+#endif
+#ifndef TRUE
+#  define TRUE true
+#endif
 #define ABANDON
 #define ADOPT
 

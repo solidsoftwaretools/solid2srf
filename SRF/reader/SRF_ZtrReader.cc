@@ -1,20 +1,14 @@
 //
-#include <ios>
-#include <stddef.h>
-#include <SRF_Read.hh>
-#include <SRF_ContainerHeader.hh>
-#include <SRF_DataBlockHeader.hh>
-#include <SRF_Block.hh>
-#include <ZTR_ChunkList.hh>
-#include <SRF_File.hh>
+#include <iostream>
+#include <cstddef>
+#include <cstdlib>
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-class SRF_ContainerHeader;
-class SRF_DataBlockHeader;
-class SRF_DataBlock;
+#include "SRF_Read.hh"
+#include "SRF_ContainerHeader.hh"
+#include "SRF_DataBlockHeader.hh"
+#include "SRF_Block.hh"
+#include "ZTR_ChunkList.hh"
+#include "SRF_File.hh"
 
 int
 main(int argc, char* argv[])
