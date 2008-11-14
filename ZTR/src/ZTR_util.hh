@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <endian.h>
+#include <byteswap.h>
 
 // put in a global include
 #ifndef FALSE
@@ -58,102 +59,39 @@ static inline uint64_t ZTR_ByteSwap_64_C(uint64_t val)
                 (((uint64_t) (val) & (uint64_t) 0x00ff000000000000ULL) >> 40) |
                 (((uint64_t) (val) & (uint64_t) 0xff00000000000000ULL) >> 56)));
 }
-
-/* Some optimized routines for specific arches */
-#if defined (__GNUC__) && (__GNUC__ >= 2) && defined (__OPTIMIZE__)
-#if defined (__pentium4__)
-// 32-bit intel systems -- any post 486 would do, really.
-static inline uint16_t ZTR_ByteSwap_16_IA32(uint16_t val)
-{
-    register uint16_t v;
-    if (__builtin_constant_p (val))
-        v = ZTR_ByteSwap_16_C (val);
-    else
-        __asm__ ("rorw $8, %w0"
-                 : "=r" (v)
-                 : "0" (val)
-                 : "cc"); 
-    return v;
-}
-
-static inline uint32_t ZTR_ByteSwap_32_IA32(uint32_t val)
-{
-    register uint32_t v;
-    if (__builtin_constant_p (val))
-        v = ZTR_ByteSwap_32_C (val);
-    else
-        __asm__ ("bswap %0"
-                 : "=r" (v)
-                 : "0" (val));
-    return v;
-}
-static inline uint64_t ZTR_ByteSwap_64_IA32(uint64_t val)
-{
-    union { uint64_t ll;
-        uint32_t l[2]; } w,r;
-    w.ll = ((uint64_t) (val));
-    if (__builtin_constant_p (w.ll))
-        r.ll = ZTR_ByteSwap_64_C (w.ll);
-    else
-    {
-        r.l[0] = ZTR_ByteSwap_32 (w.l[1]);
-        r.l[1] = ZTR_ByteSwap_32 (w.l[0]);
-    }
-    return r.ll;
-}
-
-#define ZTR_ByteSwap_16(val) (ZTR_ByteSwap_16_IA32(val))
-#define ZTR_ByteSwap_32(val) (ZTR_ByteSwap_32_IA32(val))
-#define ZTR_ByteSwap_64(val) (ZTR_ByteSwap_64_IA32(val))
-
-#elif defined (__x86_64__)
-static inline uint32_t ZTR_ByteSwap_32_X86_64(uint32_t val)
-{
-    register uint32_t v;
-    if (__builtin_constant_p (val))
-        v = ZTR_ByteSwap_32_C (val);
-    else
-        __asm__ ("bswapl %0"
-                 : "=r" (v)
-                 : "0" (val));
-    return v;
-}
-
-static inline uint64_t ZTR_ByteSwap_64_X86_64(uint64_t val)
-{
-    register uint64_t v;
-    if (__builtin_constant_p (val))
-        v = ZTR_ByteSwap_64_C (val);
-    else
-        __asm__ ("bswapq %0"
-                 : "=r" (v)
-                 : "0" (val));
-    return v;
-}
-
-#define ZTR_ByteSwap_16(val) ZTR_ByteSwap_16_C(val)
-#define ZTR_ByteSwap_32(val) ZTR_ByteSwap_32_X86_64(val)
-#define ZTR_ByteSwap_64(val) ZTR_ByteSwap_64_X86_64(val)
-#else
-// Generic Platform Independant versions 
 #define ZTR_ByteSwap_16(val) ZTR_ByteSwap_16_C(val)
 #define ZTR_ByteSwap_32(val) ZTR_ByteSwap_32_C(val)
 #define ZTR_ByteSwap_64(val) ZTR_ByteSwap_64_C(val)
-#endif
-#endif
 
-
-#if WORDS_BIGENDIAN == 1
-
-#define ZTR_ByteSwapAsRequired_4(A) (A)
-#define ZTR_ByteSwapAsRequired_2(A) (A)
-
+#if (WORDS_BIGENDIAN == 1) || (BYTE_ORDER == BIG_ENDIAN)
+#  define ZTR_ByteSwapAsRequired_4(A) (A)
+#  define ZTR_ByteSwapAsRequired_2(A) (A)
 #else
-
-#define ZTR_ByteSwapAsRequired_2(A) ZTR_ByteSwap_16(A)
-#define ZTR_ByteSwapAsRequired_4(A) ZTR_ByteSwap_32(A)
-
+#  if defined (__GNUC__) && (__GNUC__ >= 2) && defined (__OPTIMIZE__)
+// #warning Using GCC optimized byteswap
+#    define ZTR_ByteSwapAsRequired_2(A) bswap_16(A)
+#    define ZTR_ByteSwapAsRequired_4(A) bswap_32(A)
+#  else 
+#    define ZTR_ByteSwapAsRequired_2(A) ZTR_ByteSwap_16(A)
+#    define ZTR_ByteSwapAsRequired_4(A) ZTR_ByteSwap_32(A)
+#  endif
 #endif
+
+#define DELETE( A ) { delete A; A = NULL; }
+#define DELETE_ARRAY( A ) { delete [] A; A = NULL; }
+
+void ZTR_ReportError( const std::string& errMesg );
+
+void
+ZTR_ConvertStringToIntVector( const std::string& valueString,
+                              std::vector<int>* valueVec );
+
+void
+ZTR_ConvertStringToFloatVector( const std::string& valueString,
+                                std::vector<float>* valueVec );
+
+void
+ZTR_Dumper( const std::string& ztr );
 
 #define DELETE( A ) { delete A; A = NULL; }
 #define DELETE_ARRAY( A ) { delete [] A; A = NULL; }
