@@ -136,45 +136,46 @@ class ReadFile:
       if (not self.buf) or (self.buf is None):
         break
 
+      panel = None
+      
       # Process each line
       for line in self.buf:
-        try:
-          if line[0] == '#':
-            #sys.stderr.write("COMMENT: '%s'" % line)
-            # FIXME: Should have processed
-            self.comments.append(line)
-            continue
+        if line[0] == '#':
+          #sys.stderr.write("COMMENT: '%s'" % line)
+          # FIXME: Should have processed
+          self.comments.append(line)
+          continue
 
-          if line[0] == '>':
-            panel = int(line[1:line.index("_")])
+        if line[0] == '>':
+          panel = int(line[1:line.index("_")])
+        
+        if panel > self.currentpanel:
+          if self.currentpanel != None:
+            completepanel = self.currentpanel
+            self.currentpanel = panel
+            self.index.append(completepanel, readcount, panelstartpos, cpos)
+            self.index.append(panel, 0, cpos, -1) ## special hint for next panel...
+            sys.stderr.write("Panel: %d (%d, %d) Next: %d\n" % (completepanel, panelstartpos, cpos, panel))
+            yield PanelData(completepanel, readcount, panelstartpos, cpos, pdata)
+            # What about cpos? If we never return from yield, cpos is not accurate
 
-            if panel > self.currentpanel:
-              if self.currentpanel != None:
-                completepanel = self.currentpanel
-                self.currentpanel = panel
-                self.index.append(completepanel, readcount, panelstartpos, cpos)
-                self.index.append(panel, 0, cpos, -1) ## special hint for next panel...
-                sys.stderr.write("Panel: %d (%d, %d) Next: %d\n" % (completepanel, panelstartpos, cpos, panel))
-                yield PanelData(completepanel, readcount, panelstartpos, cpos, pdata)
-                # What about cpos? If we never return from yield, cpos is not accurate
+          # reset buffer and counters
+          #pdata.truncate(0)
+          pdata = []
+          self.currentpanel = panel
+          panelstartpos = cpos
+          readcount = 0
+          
+          # OK, this read counts
+          readcount += 1
 
-              # reset buffer and counters
-              #pdata.truncate(0)
-              pdata = []
-              self.currentpanel = panel
-              panelstartpos = cpos
-              readcount = 0
+        # Always append line to current buffer.
+        #pdata.write(line)
+        pdata.append(line)
 
-            # OK, this read counts
-            readcount += 1
-
-          # Always append line to current buffer.
-          #pdata.write(line)
-          pdata.append(line)
-
-        finally:
-          cpos += len(line)
-
+      #finally:
+      cpos += len(line)
+        
       # buf is exhausted
       self.buf = None
       
@@ -398,7 +399,7 @@ class ReadIndex:
       try: 
         next = self.getNextPanel(x.panel)
         x.end = next.start
-      except KeyError:
+      except IndexError, KeyError:
         x.end = -1
 
   def getIndex(self):
@@ -572,15 +573,17 @@ def splitFile(f, chunksize = 25, start=None, end=None, resume=None):
     except IndexError:
       sys.stderr.write("No more panels in file\n")
       break
-    
-    sys.stderr.write("Split Complete\n")
+
+  
+  sys.stderr.write("Split Complete\n")
       
   # Didn't have an index before, but it's complete now
-  if not haveIndex and read.index.isComplete():
+  if not haveIndex:
+    # and read.index.isComplete():
+    #read.index.complete = True
     read.index.writeIndex()
     
   print "Parse complete: %f ms, %f ms" % ( time.time() - t0, time.clock() - t1 )
-
 
 
 def writePanels(readfile, readiter, c, outfile, name=None):
