@@ -313,6 +313,7 @@ if __name__=='__main__':
     for p in panels:
       if p in spchpanels:
         # validation pass
+        print "Panel: %d" % p
         numspch = numspch + 1
 
     if numspch == 0:
@@ -336,12 +337,17 @@ if __name__=='__main__':
       conv.setFilterTag(opt.tag)
     
     for p in panels:
-      if p in spchpanels:
-        spch = dspch[p]
+      spch = None
+      if p in spchpanels:        
+        spch = dspch[int(p)]
+      else:
+        continue
       
       log("Processing SPCH: '%s'" % spch,3)
       try:
         conv.processSPCH(spch)
+      except KeyboardInterrupt:
+        raise
       except:
         log("BAD SPCH?: '%s'" % spch, 5)        
 
