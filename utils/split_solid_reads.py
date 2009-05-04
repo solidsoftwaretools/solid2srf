@@ -451,10 +451,11 @@ class ReadIndex:
     return self
 
   def getIndexName(self):
-    (base, ext) = os.path.splitext(self.sourcefile)
-    if ext == ".gz":
+    #(base, ext) = os.path.splitext(self.sourcefile)
+    isGZ = self.sourcefile.rfind(".gz")
+    if isGZ >= 0:
       """ Index is on contents, not gz, so use base name """
-      f = base
+      f = self.sourcefile.replace(".gz","")
     else:
       f = self.sourcefile
     return f + self.indexextension
@@ -571,6 +572,7 @@ def splitFile(f, chunksize = 25, start=None, end=None, resume=None):
     try:
       nextPanel = writePanels(read, readiter, c, outfile, cStr)
     except IndexError:
+      traceback.print_stack()
       sys.stderr.write("No more panels in file\n")
       break
 
@@ -578,7 +580,7 @@ def splitFile(f, chunksize = 25, start=None, end=None, resume=None):
   sys.stderr.write("Split Complete\n")
       
   # Didn't have an index before, but it's complete now
-  if not haveIndex:
+  if not haveIndex and (start == 1 and end == 9999):
     # and read.index.isComplete():
     #read.index.complete = True
     read.index.writeIndex()
@@ -598,9 +600,9 @@ def writePanels(readfile, readiter, c, outfile, name=None):
       return
     if rend < min(panels):
       # end is before range
-      return    
+      return
 
-    firstPanel = readfile.index.getPanel(c[0])
+    firstPanel = readfile.index.getPanel(rstart)
     if firstPanel:
       sys.stderr.write("Seeking to panel %d at %d (current %d) ..." % \
                        (firstPanel.panel, firstPanel.start, readfile.tell()))
@@ -608,8 +610,13 @@ def writePanels(readfile, readiter, c, outfile, name=None):
       sys.stderr.write(" OK\n")
       readfile.currentpanel = firstPanel.panel
 
-  nextPanel = None
   out = None
+  #nextPanel = readfile.index.getNextPanel(rstart)
+  #nextPanel = rstart
+  nextPanel = None
+  #if nextPanel > rend:
+  #  sys.stderr.write("First panel beyond range: %d - skipping chunk\n" % (nextPanel))
+  #  return
 
   for pdata in readiter:
     if pdata.panel < rstart:
@@ -618,12 +625,13 @@ def writePanels(readfile, readiter, c, outfile, name=None):
 
     if pdata.panel > rend:
       ## Oops. Went to far. This could be a problem.
+      ## YES - PROBLEM in empty chunks - consumes first panel of next chunk.
       sys.stderr.write("Got extra panel: %d\n" % (pdata.panel))
       break
 
     if not out:
       workDir, fname = os.path.split(outfile)
-      if not os.path.exists(workDir):
+      if workDir and not os.path.exists(workDir):
         os.mkdir(workDir, 0775)
       sys.stderr.write("Writing chunk to: '%s'\n" % outfile)
       out = ReadFile(outfile, 'w')
@@ -639,16 +647,16 @@ def writePanels(readfile, readiter, c, outfile, name=None):
     # Peek at what next panel is
     nextPanel = readfile.index.getNextPanel(pdata.panel)
     # This will raise IndexException if there is no next panel
-    
+
     if nextPanel.panel > rend:
       # Panel is past wanted range. This is where we should break.
       break
-  
+
   # close file
   if out:
     sys.stderr.write("... complete.\n")
     out.close()
-  
+
   return nextPanel
 
 
@@ -719,30 +727,27 @@ if __name__ == "__main__":
       splitFile(f, chunksize=opt.chunk, start=opt.start, end=opt.end, resume=opt.resume)
       
   elif cmd == 'range':
-    #startpanel = int(v[0])
     startpanel = opt.start
-    #endpanel = int(v[1])
     endpanel = opt.end
     print "Panel range: %d -> %d" % (startpanel, endpanel)
-    #f = v[2]
-    f = v.pop(0)
     outfile = opt.output
     if not (startpanel and endpanel and outfile):
       sys.stderr.write("Usage: range --start=<n> --end=<n> --output=<file>\n")
       exit(1)
-    
-    read = ReadFile(f, 'rb')
-    if opt.verbose:
-      read.verbose = opt.verbose
-    index = read.getIndex()
-    if not index.isComplete():
-      sys.syderr.write("Error, must index file first to specify range\n")
-      exit(1)
-                    
-    panels = index.getPanels()
+    sys.stderr.write("Working on files: %s\n" % v)
+    #f = v.pop(0)
+    for f in v.pop(0): 
+        read = ReadFile(f, 'rb')
+        if opt.verbose:
+            read.verbose = opt.verbose
+        index = read.getIndex()
+        if not index.isComplete():
+            sys.syderr.write("Error, must index file first to specify range\n")
+            exit(1)
+        panels = index.getPanels()
 
-    c = [ n for n in xrange(startpanel, endpanel) if n in panels ]
-    writePanels(read, c, outfile, name=" ".join(sys.argv[:]))
+        c = [ n for n in xrange(startpanel, endpanel) if n in panels ]
+        writePanels(read, iter(read), c, outfile, name=" ".join(sys.argv[:]))
 
   else:
     print "Unknown command: " + cmd

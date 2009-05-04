@@ -27,7 +27,8 @@ class SpchToXml:
     self.h5file = tables.openFile(fname, mode = "r")
 
   def closeHDF(self):
-    self.h5file.close()
+    if self.h5file != None:
+      self.h5file.close()
     self.h5file = None
 
   def processSPCH(self, spch):
@@ -163,10 +164,8 @@ class SpchToXml:
     self.xmldoc.endElement(u'SOLiD')
     self.xmldoc.endDocument()
     self.xmldoc._out.write("\n")
-    self.outfh.close()
-
-##======================================================================
-    
+    #self.outfh.close()
+    self.outfh = None
 
 ##======================================================================
 def chunkInterval(r, n):
@@ -206,6 +205,18 @@ loglevel = 3
 def log(msg, level=3):
   if(level >= loglevel):
     sys.stderr.write(msg + "\n")
+
+import traceback
+def formatExceptionInfo(maxTBlevel=5):
+	cla, exc, trbk = sys.exc_info()
+	excName = cla.__name__
+	try:
+		excArgs = exc.__dict__["args"]
+	except KeyError:
+		excArgs = "<no args>"
+	excTb = traceback.format_tb(trbk, maxTBlevel)
+	return (excName, excArgs, excTb)
+
 
 ##======================================================================
 
@@ -349,7 +360,9 @@ if __name__=='__main__':
       except KeyboardInterrupt:
         raise
       except:
-        log("BAD SPCH?: '%s'" % spch, 5)        
+        log("Error: %s\n%s\n%s" % formatExceptionInfo(), 4)
+        log("BAD SPCH?: '%s'" % spch, 5)
+        conv.closeHDF()
 
     conv.close()
     outfh.close()
