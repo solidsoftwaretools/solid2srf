@@ -91,7 +91,9 @@ class ReadFile:
     if self.index.isComplete():
       # p is IndexEntry
       self.seek(p.start)
+      assert(self.tell() == p.start, "Unexpected file location: %d != %d" % (self.tell(), p.start))
       pdata = self.read(p.end - p.start) # Don't bother to tokenize with readline
+      sys.stderr.write("Extracted bytes (%d) : %d -> %d (%d) @ %d\n" % (p.panel, p.start, p.end, len(pdata), self.tell()))
       # Update position pointer to point to next panel
       self.currentpanel = self.index.getNextPanel(p.panel)
       return PanelData(p.panel, p.reads, p.start, p.end, pdata)
@@ -111,8 +113,9 @@ class ReadFile:
         panels = panels[cidx:]
       else:
         sys.stderr.write("Iterating through all panels\n")
-      
+
       for p in panels:
+        sys.stderr.write("Returning data for panel %d\n" % p)
         yield self.getPanelDataByIndex(self.index.getPanel(p))
       return
 
@@ -137,7 +140,7 @@ class ReadFile:
         break
 
       panel = None
-      
+
       # Process each line
       for line in self.buf:
         if line[0] == '#':
@@ -148,13 +151,14 @@ class ReadFile:
 
         if line[0] == '>':
           panel = int(line[1:line.index("_")])
-        
+
         if panel > self.currentpanel:
           if self.currentpanel != None:
             completepanel = self.currentpanel
             self.currentpanel = panel
-            self.index.append(completepanel, readcount, panelstartpos, cpos)
-            self.index.append(panel, 0, cpos, -1) ## special hint for next panel...
+            if not self.index.isComplete():
+                self.index.append(completepanel, readcount, panelstartpos, cpos)
+                self.index.append(panel, 0, cpos, -1) ## special hint for next panel...
             sys.stderr.write("Panel: %d (%d, %d) Next: %d\n" % (completepanel, panelstartpos, cpos, panel))
             yield PanelData(completepanel, readcount, panelstartpos, cpos, pdata)
             # What about cpos? If we never return from yield, cpos is not accurate
@@ -165,23 +169,23 @@ class ReadFile:
           self.currentpanel = panel
           panelstartpos = cpos
           readcount = 0
-          
-          # OK, this read counts
-          readcount += 1
 
+        # OK, this read counts
+        readcount += 1
         # Always append line to current buffer.
-        #pdata.write(line)
         pdata.append(line)
 
-      #finally:
-      cpos += len(line)
-        
-      # buf is exhausted
+        #finally:
+        cpos += len(line)
+
+      # buf is exhausted (but for loop doesn't alter self.buf)
       self.buf = None
-      
+      assert(cpos == self.tell(), "Disoriented in file: %d != %d" % (cpos, self.tell()))
+
     # Handle final panel
     if self.currentpanel != None:
-      self.index.append(self.currentpanel, readcount, panelstartpos, cpos)
+      if not self.index.isComplete():
+        self.index.append(self.currentpanel, readcount, panelstartpos, cpos)
       yield PanelData(self.currentpanel, readcount, panelstartpos, cpos, pdata)
 
 
@@ -267,16 +271,13 @@ class ReadFile:
     if len(index) == 0:
       #  self.buildIndex()
       # NB : Must change approach?
-      pass
-
+      return None
 
     return self.index
 
-  def process(self):
-    pass
-
   def buildIndex(self):
-    fh = self.reopen()
+    if self.tell() != 0:
+      fh = self.reopen()
 
     t0, t1 = time.time(), time.clock()
     print " *** Building Index on: " + self.filename
@@ -297,10 +298,8 @@ class ReadFile:
     self.index.writeIndex()
 
     print "Build index: %f ms, %f ms" % ( time.time() - t0, time.clock() - t1 )
-
-    self.reopen()
-
-    return a
+    # self.reopen()
+    return self.index
 
 #======================================================================
 
@@ -641,9 +640,9 @@ def writePanels(readfile, readiter, c, outfile, name=None):
         out.fh.writelines("# split_solid_reads.py -- %s\n" % name)
 
     # write panel worth of data
-    #sys.stderr.write("%d " % (pdata.panel))
+    sys.stderr.write("Writing data for panel %d (%d)\n" % (pdata.panel, len(pdata.data)))
+    sys.stderr.write("DEBUG: %s" % pdata.data[0:10])
     out.fh.writelines(pdata.data)
-
     # Peek at what next panel is
     nextPanel = readfile.index.getNextPanel(pdata.panel)
     # This will raise IndexException if there is no next panel
@@ -682,7 +681,6 @@ def getPanelRange(panels, c):
 
 ##======================================================================
 if __name__ == "__main__":
-  
   from optparse import OptionParser
   parser = OptionParser();
   parser.add_option("-v", "--verbose", dest="verbose", action="count",
@@ -700,8 +698,11 @@ if __name__ == "__main__":
 
   (opt, args) = parser.parse_args()
 
+  print args
   cmd = args.pop(0)
-  v = [ args ]
+  v = args
+  print cmd
+  print v
 
   print "Action: " + cmd
   if cmd == 'index':
@@ -718,7 +719,7 @@ if __name__ == "__main__":
       sys.stderr.write("Usage: split --chunk=<n>\n")
       exit(1)
     print cmd + ": chunk size " + str(opt.chunk)
-    for f in v.pop(0):
+    for f in v:
       if f[-4:] == '.idx':
         continue
       if f[-6:] == '.stats':
@@ -735,19 +736,21 @@ if __name__ == "__main__":
       sys.stderr.write("Usage: range --start=<n> --end=<n> --output=<file>\n")
       exit(1)
     sys.stderr.write("Working on files: %s\n" % v)
-    #f = v.pop(0)
-    for f in v.pop(0): 
+    for f in v:
         read = ReadFile(f, 'rb')
         if opt.verbose:
             read.verbose = opt.verbose
         index = read.getIndex()
-        if not index.isComplete():
-            sys.syderr.write("Error, must index file first to specify range\n")
+        if not index or not index.isComplete():
+            sys.stderr.write("Error, must index file first to specify range\n")
             exit(1)
+
         panels = index.getPanels()
 
         c = [ n for n in xrange(startpanel, endpanel) if n in panels ]
-        writePanels(read, iter(read), c, outfile, name=" ".join(sys.argv[:]))
+        if opt.verbose:
+            sys.stderr.write("Panels in range: %s" % c)
+        writePanels(read, iter(read), c, outfile, name="_".join(sys.argv[:]))
 
   else:
     print "Unknown command: " + cmd
