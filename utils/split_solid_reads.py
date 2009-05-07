@@ -93,7 +93,8 @@ class ReadFile:
       self.seek(p.start)
       assert(self.tell() == p.start, "Unexpected file location: %d != %d" % (self.tell(), p.start))
       pdata = self.read(p.end - p.start) # Don't bother to tokenize with readline
-      sys.stderr.write("Extracted bytes (%d) : %d -> %d (%d) @ %d\n" % (p.panel, p.start, p.end, len(pdata), self.tell()))
+      if self.verbose:
+          sys.stderr.write("Extracted bytes (%d) : %d -> %d (%d) @ %d\n" % (p.panel, p.start, p.end, len(pdata), self.tell()))
       # Update position pointer to point to next panel
       self.currentpanel = self.index.getNextPanel(p.panel)
       return PanelData(p.panel, p.reads, p.start, p.end, pdata)
@@ -115,7 +116,7 @@ class ReadFile:
         sys.stderr.write("Iterating through all panels\n")
 
       for p in panels:
-        sys.stderr.write("Returning data for panel %d\n" % p)
+        #sys.stderr.write("Returning data for panel %d\n" % p)
         yield self.getPanelDataByIndex(self.index.getPanel(p))
       return
 
@@ -640,8 +641,7 @@ def writePanels(readfile, readiter, c, outfile, name=None):
         out.fh.writelines("# split_solid_reads.py -- %s\n" % name)
 
     # write panel worth of data
-    sys.stderr.write("Writing data for panel %d (%d)\n" % (pdata.panel, len(pdata.data)))
-    sys.stderr.write("DEBUG: %s" % pdata.data[0:10])
+    sys.stderr.write("Writing data for panel %d (%d bytes)\n" % (pdata.panel, len(pdata.data)))
     out.fh.writelines(pdata.data)
     # Peek at what next panel is
     nextPanel = readfile.index.getNextPanel(pdata.panel)
