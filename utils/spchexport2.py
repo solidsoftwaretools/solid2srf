@@ -1,9 +1,19 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python
 
 import sys, string, getopt, re
 from xml.sax.saxutils import XMLGenerator
 from xml.sax.xmlreader import AttributesImpl
 import tables, numpy
+
+from tables.exceptions import \
+             OldIndexWarning, NoIndexingWarning, NoSuchNodeError, FlavorWarning, NaturalNameWarning, DataTypeWarning
+
+# Disable overly verbose pytables warnings.
+# These are known issues with SPCH vs PYTABLES format
+import warnings
+warnings.simplefilter('ignore', NaturalNameWarning)
+warnings.simplefilter('ignore', DataTypeWarning)
+warnings.simplefilter('ignore', UserWarning)
 
 class SpchToXml:
 
@@ -24,7 +34,7 @@ class SpchToXml:
   def openHDF(self, fname):
     if self.h5file != None:
       self.closeHDF()
-    self.h5file = tables.openFile(fname, mode = "r")
+    self.h5file = tables.openFile(fname, mode = "r",  PYTABLES_SYS_ATTRS=False)
 
   def closeHDF(self):
     if self.h5file != None:
@@ -64,11 +74,11 @@ class SpchToXml:
     # 01_V1 - xml node names must not begin with numeric value
     cyclere = re.compile("^\d{2}_V\d+$")
     if cyclere.match(name):
-      name = "C_" + name
+      name = u"C_" + name
 
     # start group add add attributes
     # NB calls startElement on name
-    self.buildNodeWithAttrs(name, group._v_attrs)
+    self.buildNodeWithAttrs(group, name, group._v_attrs)
 
     # Walk leaf nodes before child groups
     for leaf in self.h5file.iterNodes(group, 'Leaf'):
@@ -84,9 +94,9 @@ class SpchToXml:
     self.xmldoc._out.write("\n")
 
 
-  def buildNodeWithAttrs(self, name, attrs):
+  def buildNodeWithAttrs(self, node, name, attrs):
     """ Returns attribute node, plus children """
-    (nodeattr, childnodes) = self.processAttrs(attrs)
+    (nodeattr, childnodes) = self.processAttrs(node, attrs)
 
     xmlattr = AttributesImpl(nodeattr)
     self.xmldoc.startElement(name, xmlattr)
@@ -98,19 +108,25 @@ class SpchToXml:
       self.xmldoc._out.write("\n")
 
 
-  def processAttrs(self, attrs):
+  def processAttrs(self, node, attrs):
     if attrs == None:
       return ({}, {})
     xmlattr = {}
     childnodes = {}
-    for attrname in attrs._g_listAttr():
-      attrvalue = attrs._g_getAttr(attrname)
-      log("Attr '%s': %s" % (attrname, attrvalue) ,1)
-
-      if attrvalue.shape == () or (len(attrvalue.shape) == 1 and attrvalue.shape[0] == 1):
-        xmlattr[unicode(attrname)] = unicode(str(attrvalue[0]))
-      else:
-        childnodes[attrname] = self.processArray(attrvalue)
+    for attrname in attrs._g_listAttr(node):
+      try:
+        attrvalue = attrs._g_getAttr(node, attrname)
+        log("Attr '%s': %s" % (attrname, attrvalue) ,1)
+        if attrvalue is None:
+            continue
+        if attrvalue.shape == () or (len(attrvalue.shape) == 1 and attrvalue.shape[0] == 1):
+          xmlattr[unicode(attrname)] = unicode(str(attrvalue[0]))
+        else:
+          childnodes[attrname] = self.processArray(attrvalue)
+      except TypeError:
+          raise
+          # Unable to handle unimplemented attribute types - var string
+          pass
 
     return (xmlattr, childnodes)
 
@@ -137,11 +153,12 @@ class SpchToXml:
     if (attrs == None) and (leaf.shape == ()):
       return
 
-    self.buildNodeWithAttrs(leaf.name, attrs)
+    self.buildNodeWithAttrs(leaf, leaf.name, leaf.attrs)
 
     if (isinstance(leaf, tables.Table) or isinstance(leaf, tables.Array)) and leaf.shape != ():
       # Output any data fields with max size 4x4
       log("Data: %s" % ( repr(leaf) ), 1)
+      #log("Data: %s" % ( repr(leaf[0])), 1)
       if len(leaf.shape) == 1 and leaf.shape[0] == 1:
         self.xmldoc.characters(unicode(str(leaf[0])))
       elif len(leaf.shape) <= 2 and max(leaf.shape) <= 4:
@@ -151,8 +168,11 @@ class SpchToXml:
         #self.xmldoc.characters(unicode(data))
         #self.xmldoc.endElement(u'data')
         # NB This is usually a mistake - only happens when numbeads = 0
+    elif (isinstance(leaf, tables.UnImplemented)):
+      log("Unimplemented: %s" % ( repr(leaf) ), 1)
+      # Ignore unimplemented node
     else:
-      sys.err.write("ERROR: Unsupported HDF5 Node type: " + str(leaf))
+      log("ERROR: Unsupported HDF5 Node type: " + str(leaf), 4)
 
     self.xmldoc.endElement(unicode(leaf.name))
     self.xmldoc._out.write("\n")
@@ -208,15 +228,14 @@ def log(msg, level=3):
 
 import traceback
 def formatExceptionInfo(maxTBlevel=5):
-	cla, exc, trbk = sys.exc_info()
-	excName = cla.__name__
-	try:
-		excArgs = exc.__dict__["args"]
-	except KeyError:
-		excArgs = "<no args>"
-	excTb = traceback.format_tb(trbk, maxTBlevel)
-	return (excName, excArgs, excTb)
-
+  cla, exc, trbk = sys.exc_info()
+  excName = cla.__name__
+  try:
+    excArgs = exc.__dict__["args"]
+  except KeyError:
+    excArgs = "<no args>"
+  excTb = traceback.format_tb(trbk, maxTBlevel)
+  return (excName, excArgs, excTb)
 
 ##======================================================================
 
@@ -247,13 +266,19 @@ if __name__=='__main__':
 
   (opt, args) = parser.parse_args()
 
+  if not args:
+    log("ERROR: No spch files specified",5)
+    log("Usage: spchexport2.py -o ./outputprefix [-c <n>] [-s <n>] [-e <n>] [-r] [-vvv] [-x <F3|R3>]  <spchfiles>",5)
+    sys.exit(1)
+
+  if not opt.output:
+    log("ERROR: Output prefix is required", 5)
+    sys.exit(1)
+
   if(opt.verbose):
     # NB This is backwards. Fixme with a real logger
     loglevel -= opt.verbose
     log("Loglevel: %d" % loglevel, 4)
-
-  if not args:
-    log("ERROR: No spch files specified",5)
 
 
   spchfiles = []
@@ -305,11 +330,10 @@ if __name__=='__main__':
 
   spchpanels = dspch.keys()
   spchpanels.sort()
-  
+
   if len(chunks) == 0:
     ## ?? How to handle single set?
     chunks.append( ( spchpanels, 'ALL', 0 ) )
-
 
   for c in chunks:
 
@@ -319,7 +343,7 @@ if __name__=='__main__':
       continue
 
     print "Processing: " + name
-    
+
     numspch = 0
     for p in panels:
       if p in spchpanels:
@@ -334,26 +358,28 @@ if __name__=='__main__':
     ## prepare output file
     if opt.tag:
       name = name + "_" + opt.tag
-      
+
     if len(chunks) > 1:
       outfile = "set%04d/%s.%s.metadata.xml" % ( cnum, opt.output, name )
     else:
       outfile = opt.output + ".metadata.xml"
 
     print "Writing data from %d spch files to xml: %s" % (numspch, outfile)
-     
+    # FIXME - not working for cwd paths
+    if not os.path.isdir(os.path.dirname(outfile)):
+        os.makedirs(os.path.dirname(outfile), mode=02775)
     outfh = open(outfile, 'w')
     conv = SpchToXml(outfh)
     if(opt.tag):
       conv.setFilterTag(opt.tag)
-    
+
     for p in panels:
       spch = None
-      if p in spchpanels:        
+      if p in spchpanels:
         spch = dspch[int(p)]
       else:
         continue
-      
+
       log("Processing SPCH: '%s'" % spch,3)
       try:
         conv.processSPCH(spch)
@@ -363,6 +389,7 @@ if __name__=='__main__':
         log("Error: %s\n%s\n%s" % formatExceptionInfo(), 4)
         log("BAD SPCH?: '%s'" % spch, 5)
         conv.closeHDF()
+        raise
 
     conv.close()
     outfh.close()
