@@ -23,21 +23,26 @@ SRF_SOLiDintensityFiles::open( const std::string& intensityFilesRoot,
                                const std::string& title,
                                bool titleOverride )
 {
-    std::string ftcExt( "FTC.fasta" );
+    std::string famExt( "FAM.fasta" );
     std::string cy3Ext( "CY3.fasta" );
     std::string txrExt( "TXR.fasta" );
     std::string cy5Ext( "CY5.fasta" );
-    std::string ftcIntensStr = intensityFilesRoot + ftcExt;
+    std::string famIntensStr = intensityFilesRoot + famExt;
     std::string cy3IntensStr = intensityFilesRoot + cy3Ext;
     std::string txrIntensStr = intensityFilesRoot + txrExt;
     std::string cy5IntensStr = intensityFilesRoot + cy5Ext;
 
-    checkExtension(ftcIntensStr);
+    if(!checkExtension(famIntensStr)) {
+        // Legacy support for FTC files
+        std::string ftcExt( "FTC.fasta" );
+        famIntensStr = intensityFilesRoot + ftcExt;
+        checkExtension(famIntensStr);
+    }
     checkExtension(cy3IntensStr);
     checkExtension(txrIntensStr);
     checkExtension(cy5IntensStr);
-    
-    if ( !ftcIntens.open( ftcIntensStr.c_str(),
+
+    if ( !famIntens.open( famIntensStr.c_str(),
                           title,
                           titleOverride ) ||
          !cy3Intens.open( cy3IntensStr.c_str(),
@@ -60,7 +65,7 @@ SRF_SOLiDintensityFiles::open( const std::string& intensityFilesRoot,
 bool
 SRF_SOLiDintensityFiles::moreData( void )
 {
-    if ( ftcIntens.moreData() ||
+    if ( famIntens.moreData() ||
          cy3Intens.moreData() ||
          txrIntens.moreData() ||
          cy5Intens.moreData() )
@@ -75,12 +80,12 @@ bool
 SRF_SOLiDintensityFiles::readNextBlock( const std::string& cfastaPartialReadId,
                                         SRF_SOLiDdataSet* dataSet )
 {
-    if ( !ftcIntens.isFileOpen() ) // do we have intensity values ?
+    if ( !famIntens.isFileOpen() ) // do we have intensity values ?
     {                              // if not, just return
         return TRUE;
     }
 
-    if ( !ftcIntens.readNextBlockCommon( cfastaPartialReadId ) ||
+    if ( !famIntens.readNextBlockCommon( cfastaPartialReadId ) ||
          !cy3Intens.readNextBlockCommon( cfastaPartialReadId ) ||
          !txrIntens.readNextBlockCommon( cfastaPartialReadId ) ||
          !cy5Intens.readNextBlockCommon( cfastaPartialReadId ) )
@@ -88,12 +93,12 @@ SRF_SOLiDintensityFiles::readNextBlock( const std::string& cfastaPartialReadId,
        return FALSE;
     }
 
-    std::vector<float> ftcIntensValues;
+    std::vector<float> famIntensValues;
     std::vector<float> cy3IntensValues;
     std::vector<float> txrIntensValues;
     std::vector<float> cy5IntensValues;
 
-    if ( !readIntensityValues( ftcIntens, ftcIntensValues ) ||
+    if ( !readIntensityValues( famIntens, famIntensValues ) ||
          !readIntensityValues( cy3Intens, cy3IntensValues ) ||
          !readIntensityValues( txrIntens, txrIntensValues ) ||
          !readIntensityValues( cy5Intens, cy5IntensValues ) )
@@ -105,7 +110,7 @@ SRF_SOLiDintensityFiles::readNextBlock( const std::string& cfastaPartialReadId,
     dataSet->intensityData.clear();
 
     ftc.sampName = "0FAM";
-    ftc.intensityValues = ftcIntensValues;
+    ftc.intensityValues = famIntensValues;
     dataSet->intensityData.push_back( ftc );
 
     cy3.sampName = "1CY3";
@@ -135,7 +140,7 @@ SRF_SOLiDintensityFiles::readIntensityValues( SRF_SOLiDfile& file,
     return TRUE;
 }
 
-void
+bool
 SRF_SOLiDintensityFiles::checkExtension( std::string& fileStr )
 {
   struct stat st;
@@ -143,8 +148,11 @@ SRF_SOLiDintensityFiles::checkExtension( std::string& fileStr )
         std::string testgz = fileStr + ".gz";
         if(stat(testgz.c_str(), &st) == 0) {
             fileStr += ".gz";
+            return TRUE;
         }
+        return FALSE;
   }
+  return TRUE;
   // NB fileStr is modified
 }
 
@@ -154,7 +162,7 @@ SRF_SOLiDintensityFiles::areFilesOpen( void ) const
     // NB: Since the files are opened in order, 
     //  it's possible that the first few may succeed, and the rest could still be closed.
     // Could get away with just checking last file (cy5) here.
-    return ( ftcIntens.isFileOpen() &&
+    return ( famIntens.isFileOpen() &&
              cy3Intens.isFileOpen() &&
              txrIntens.isFileOpen() &&
              cy5Intens.isFileOpen() );

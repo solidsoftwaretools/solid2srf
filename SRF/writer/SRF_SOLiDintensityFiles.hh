@@ -31,9 +31,9 @@ class SRF_SOLiDintensityFiles
        bool readIntensityValues( SRF_SOLiDfile& file,
                                  std::vector<float>& values );
 
-       void checkExtension( std::string& fileStr );
+       bool checkExtension( std::string& fileStr );
 
-        SRF_SOLiDfile ftcIntens;
+        SRF_SOLiDfile famIntens;
         SRF_SOLiDfile cy3Intens;
         SRF_SOLiDfile txrIntens;
         SRF_SOLiDfile cy5Intens;
