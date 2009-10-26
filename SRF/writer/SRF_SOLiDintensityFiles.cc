@@ -106,12 +106,12 @@ SRF_SOLiDintensityFiles::readNextBlock( const std::string& cfastaPartialReadId,
        return FALSE;
     }
 
-    SRF_IntensityData ftc, cy3, txr, cy5;
+    SRF_IntensityData fam, cy3, txr, cy5;
     dataSet->intensityData.clear();
 
-    ftc.sampName = "0FAM";
-    ftc.intensityValues = famIntensValues;
-    dataSet->intensityData.push_back( ftc );
+    fam.sampName = "0FAM";
+    fam.intensityValues = famIntensValues;
+    dataSet->intensityData.push_back( fam );
 
     cy3.sampName = "1CY3";
     cy3.intensityValues = cy3IntensValues;
