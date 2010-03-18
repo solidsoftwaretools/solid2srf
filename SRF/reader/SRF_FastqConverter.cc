@@ -27,6 +27,33 @@
  * Utility function to generate FASTQ format strings from bases and quals
  */
 
+/*
+  SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.....................................................
+  ...............................IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII......................
+  ..........................XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+  |                         |    |        |                              |                     |
+ 33                        59   64       73                            104                   126
+
+ S - Sanger       Phred+33,  41 values  (0, 40)
+ I - Illumina 1.3 Phred+64,  41 values  (0, 40)
+ X - Solexa       Solexa+64, 68 values (-5, 62)
+ */
+struct FastQTransform: public std::unary_function<int, char> {
+    // Combine operations to correct 255 to 0 and transform to character
+    //   bind2nd(equal_to<int>(), 255), 0);
+    //   std::bind2nd( std::plus<char>(), 041));
+    //   (also now limits to max 95)
+
+    // 041 (octal) == 33 (decimal) == '!' (ascii)
+    static const int bang = 041;
+    char operator() (const int& x) const {
+        if (x == 255) return bang; // -1 (aka 255 unsigned) converted to 0
+        if (x > 94) return (94 + bang); // maximum representable in ascii
+        return (x + bang);
+    }
+};
+
 void
 streamFastQ ( const std::string readId,
               const std::string &baseString, const ZTR_Data &qualData,
@@ -50,8 +77,9 @@ streamFastQ ( const std::string readId,
     // NB - Conversion to char is a special case, and is always allowed implicitly
     transform(qualData.ints.begin(), qualData.ints.end(),
               std::ostream_iterator<char>(oss),
-              std::bind2nd( std::plus<char>(), 041)); // 041 (octal) == 33 (decimal) == '!' (ascii)
+              FastQTransform());
 
+              //std::bind2nd( std::plus<char>(), 041)); // 041 (octal) == 33 (decimal) == '!' (ascii)
     oss << std::endl;
 
     // Flush string stream to provided output handle
