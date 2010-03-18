@@ -3,6 +3,9 @@
 /* "Defined if printf outputs 1e-4 when given 0.0001" */
 #undef BROKEN_PRINTF
 
+/* Define to 1 if you have the <endian.h> header file. */
+#undef HAVE_ENDIAN_H
+
 /* Define to 1 if you have the <ext/stdio_filebuf.h> header file. */
 #undef HAVE_EXT_STDIO_FILEBUF_H
 
@@ -23,6 +26,12 @@
 
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the <machine/endian.h> header file. */
+#undef HAVE_MACHINE_ENDIAN_H
+
+/* Define to 1 if you have the <mach/endian.h> header file. */
+#undef HAVE_MACH_ENDIAN_H
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -54,6 +63,9 @@
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/endian.h> header file. */
+#undef HAVE_SYS_ENDIAN_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H

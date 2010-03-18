@@ -1,4 +1,4 @@
-//
+///
 
 #ifndef ZTR_UTIL_HH
 #define ZTR_UTIL_HH
@@ -12,8 +12,27 @@
 
 #include <string>
 #include <vector>
+
+#ifdef HAVE_STDINT_H
+#   include <stdint.h>
+#endif
+
+#ifdef HAVE_SYS_ENDIAN_H
+#include <sys/endian.h>
+#else /* !HAVE_SYS_ENDIAN_H */
+#ifdef HAVE_MACHINE_ENDIAN_H
+#include <machine/endian.h>
+#else /* !HAVE_MACHINE_ENDIAN_H */
+#ifdef HAVE_ENDIAN_H
 #include <endian.h>
+#else /* !HAVE_ENDIAN_H */
+#error "No supported endian.h"
+#endif /* !HAVE_ENDIAN_H */
+#endif /* !HAVE_MACHINE_ENDIAN_H */
+#endif /* !HAVE_SYS_ENDIAN_H */
+
 #include <byteswap.h>
+
 
 // put in a global include
 #ifndef FALSE

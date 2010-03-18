@@ -35,6 +35,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([inttypes.h fcntl.h limits.h unistd.h stddef.h stdlib.h string.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
+AC_CHECK_HEADERS([endian.h sys/endian.h mach/endian.h machine/endian.h])
 AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(short,2)
 AC_CHECK_SIZEOF(int,4)
