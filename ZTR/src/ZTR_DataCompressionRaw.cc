@@ -2,6 +2,7 @@
 #include <ios>
 #include <string>
 #include <sstream>
+#include <limits>
 #include <ZTR_DataCompressionRaw.hh>
 #include <ZTR_Chunk.hh>
 #include <ZTR_Types.hh>
@@ -60,7 +61,14 @@ ZTR_DataCompressionRaw::byteOrderAndUncompress(
              }
              else if ( type == ZTR_Type8bitUnsignedInt )
              {
-                  value = (uint8_t) buffer[0];
+                  // Cast int to uint8_t - catch overflow
+                  // Note less than test (not <=). If value is 255, it will be converted to -1.
+                  // This is to fix legacy files which wrote -1 as 255
+                  if (buffer[0] < std::numeric_limits<uint8_t>::max()) {
+                    value = static_cast<uint8_t>(buffer[0]);
+                  } else {
+                    value = -1;
+                  }
              }
 
              dataIntVec.push_back( value );
@@ -143,7 +151,7 @@ ZTR_DataCompressionRaw::compressAndByteOrder(
 
         while( it < dataIntVec.end() )
         {
-             short value = *it;
+             int16_t value = static_cast<int16_t>(*it);
              value = ZTR_ByteSwapAsRequired_2( value );
              compressedData->append(
                             reinterpret_cast<const char*>(&value), 2 );
@@ -158,7 +166,7 @@ ZTR_DataCompressionRaw::compressAndByteOrder(
 
         while( it < dataIntVec.end() )
         {
-             short value = *it;
+             uint8_t value = static_cast<uint8_t>(*it);
              unsigned char valueStr = (unsigned char) value;
              (*compressedData) += valueStr;
              it++;

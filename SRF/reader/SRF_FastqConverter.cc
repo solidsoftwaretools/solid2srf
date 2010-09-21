@@ -48,7 +48,7 @@ struct FastQTransform: public std::unary_function<int, char> {
     // 041 (octal) == 33 (decimal) == '!' (ascii)
     static const int bang = 041;
     char operator() (const int& x) const {
-        if (x == 255) return bang; // -1 (aka 255 unsigned) converted to 0
+        if (x == -1 || x == 255) return bang; // -1 (aka 255 unsigned) converted to 0
         if (x > 94) return (94 + bang); // maximum representable in ascii
         return (x + bang);
     }
