@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.59)
+AC_PREREQ(2.64)
 AC_INIT(solid2srf, 0.7.6, [http://solidsoftwaretools.com/])
 AM_CONFIG_HEADER(srf_config.h)
 AM_INIT_AUTOMAKE([foreign])
@@ -70,8 +70,7 @@ dnl AC_FUNC_STRFTIME
 dnl AC_FUNC_VPRINTF
 dnl AC_CHECK_FUNCS(mktime strspn strstr strtol)
 
-
-AC_MSG_CHECKING([if printf conforms to C99 for 0.0001])
+AC_CACHE_CHECK([if printf confirms to C99 for 0.0001], [ac_cv_bug_printf],
 AC_RUN_IFELSE([AC_LANG_PROGRAM([[
 #include <stdio.h>
 #include <string.h>
@@ -81,12 +80,13 @@ char buf[11];
    snprintf(buf,10,"%0.6g", 0.0001f);
    return(strncmp(buf, "0.0001", 10) == 0);
 ]])],
-   [AC_MSG_RESULT([broken])
-    AC_DEFINE(BROKEN_PRINTF, 1, "Defined if printf outputs 1e-4 when given 0.0001") ],
-   [AC_MSG_RESULT([ok])],
-   [AC_MSG_RESULT([skip]),
+   [ac_cv_bug_printf=broken],
+   [ac_cv_bug_printf=ok],
+   [ac_cv_bug_printf=skip]))
+if test $ac_cv_bug_printf = broken; then
     AC_DEFINE(BROKEN_PRINTF, 1, "Defined if printf outputs 1e-4 when given 0.0001") ]
-)
+fi
+
 
 dnl Check for zlib
 dnl AC_CHECK_LIB(z, gzopen, [AC_CHECK_HEADERS(zlib.h,, AC_MSG_ERROR(ZLIB headers not found))], [AC_MSG_ERROR(ZLIB library not found)])
