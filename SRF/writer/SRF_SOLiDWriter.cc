@@ -2,6 +2,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <cstring>
 #include <ZTR_util.hh>
 #include <ZTR_Chunk.hh>
 #include <ZTR_ChunkBase.hh>

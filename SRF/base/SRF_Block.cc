@@ -17,6 +17,8 @@
 
 #include <iostream>
 #include <string>
+// strcmp and memset
+#include <cstring>
 
 #include "SRF_util.hh"
 #include "SRF_Block.hh"

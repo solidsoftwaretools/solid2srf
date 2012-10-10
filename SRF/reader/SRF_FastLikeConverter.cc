@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <cstddef>
+#include <cstdlib>
 
 #include "ZTR_RetrieveChunk.hh"
 #include "ZTR_ChunkList.hh"

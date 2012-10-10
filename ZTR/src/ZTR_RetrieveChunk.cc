@@ -7,6 +7,7 @@
 #include <ZTR_RetrieveChunk.hh>
 #include <ZTR_RetrieveChunk.hh>
 #include <sstream>
+#include <cstdio>
 
 #ifdef HAVE_CONFIG_H
 #include <srf_config.h>

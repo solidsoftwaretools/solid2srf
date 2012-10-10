@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <cstdlib>
 #include "ZTR_util.hh"
 #include "SRF_util.hh"
 #include "SRF_DataBlock.hh"

@@ -1,6 +1,7 @@
 //
 #include <iostream>
 #include <string>
+#include <cstdlib>
 
 #include "SRF_Block.hh"
 #include "SRF_File.hh"

@@ -1,7 +1,8 @@
 //
 #include <iostream>
 #include <string>
-#include <stddef.h>
+#include <cstddef>
+#include <cstdlib>
 #include <SRF_util.hh>
 #include <SRF_SOLiDWriter.hh>
 #include <SRF_SOLiDsingleEndWriter.hh>

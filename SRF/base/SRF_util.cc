@@ -23,6 +23,9 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 
 #include <SRF_util.hh>
 
