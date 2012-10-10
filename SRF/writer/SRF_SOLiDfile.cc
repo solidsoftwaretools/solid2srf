@@ -116,11 +116,17 @@ SRF_SOLiDfile::open( const std::string& inputfilename,
 bool
 SRF_SOLiDfile::moreData( void )
 {
-    if ( fileOpen && (*file).peek() == EOF )
+    if ( fileOpen )
     {
-        return FALSE;
+        if( !(*file) )
+        {
+            return FALSE;
+        }
+        if( (*file).peek() == EOF )
+        {
+            return FALSE;
+        }
     }
-
     return TRUE;
 }
 

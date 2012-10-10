@@ -128,8 +128,20 @@ ZTR_RetrieveChunk::extractData( const ZTR_ChunkMatchParams& matchParams,
             itN--;
             ii--;
         }
+    } else if (matchParams.type == ZTR_ChunkTypeCNF1 )
+    {
+        // Remap QVs of 255 to -1
+        // Allows for round trip of QV -1 data
+        std::vector<int>::iterator it = data.ints.begin();
+        while( it != data.ints.end() )
+        {
+            if( *it >= 255 ) {
+                *it = -1;
+            }
+            ++it;
+        }
     }
-
+    
     if ( splitPair && pairedEndRead )
     {
         //split after first P
@@ -236,7 +248,7 @@ ZTR_RetrieveChunk::getDataForOutputGen( const ZTR_Data& dataIn ) const
     }
     else if ( dataIn.ints.size() > 0 )
     {
-        std::vector<int>::const_iterator it = dataIn.ints.begin();
+        std::vector<int>::const_iterator it = dataIn.ints.begin();        
         while ( it != dataIn.ints.end() )
         {
             oss << (*it) << " ";

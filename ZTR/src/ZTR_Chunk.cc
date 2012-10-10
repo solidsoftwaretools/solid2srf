@@ -22,7 +22,7 @@ ZTR_Chunk::ZTR_Chunk( void )
 {
     // no-op
 }
-    
+
 ZTR_Chunk::~ZTR_Chunk( void )
 {
     // no-op
@@ -78,7 +78,7 @@ ZTR_Chunk::initialize( std::istream& inputData )
     std::string metadataData;
     metadataData.assign( metadataBuffer, metadataLength );
     DELETE_ARRAY( metadataBuffer );
-   
+
     if ( !metadata.extract( metadataData ) )
     {
         ZTR_ReportError( "could not extract metadata" );
@@ -171,7 +171,7 @@ ZTR_Chunk::readyData( const ZTR_DataCompression* compressionScheme )
     std::string compressedData;
     if ( !compressionScheme->compressAndByteOrder( this,
                                                    &compressedData ))
-    {    
+    {
         ZTR_ReportError( "could not compress data" );
         return FALSE;
     }
@@ -200,7 +200,7 @@ ZTR_Chunk::readyData( const ZTR_DataCompression* compressionScheme )
 
     return TRUE;
 }
-    
+
 ZTR_Type
 ZTR_Chunk::getDataType( void ) const
 {

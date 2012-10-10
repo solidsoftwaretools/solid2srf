@@ -89,7 +89,20 @@ ZTR_ChunkCNF1::setup( ZTR_ChunkCNFscale scaleIn,
 
     getMetadata()->setMetadata( key, value );
 
-    setUncompressedDataInt( cnfIn );    
+    // QV Fixups
+    std::vector<int> cnfInFixed(cnfIn);
+    std::vector<int>::iterator it = cnfInFixed.begin();
+    while( it != cnfInFixed.end() )
+    {
+        // Remap input values of 255 or larger to -1
+        // Allows for round trip of QV -1 data
+        if( *it == 255 ) *it = -1;
+        // Cap maximum QV at 92, values above this cannot be expressed in FASTQ
+        if( *it > 92 ) *it = 92;
+        ++it;
+    }   
+
+    setUncompressedDataInt( cnfInFixed );
 
     return TRUE;
 }
@@ -105,7 +118,8 @@ ZTR_ChunkCNF1::dump( void ) const
 
     while( it < getUncompressedDataInt().end() )
     {
-        std::cout << " " << (*it);
+        const int & v = (*it >= 255) ? -1 : *it;
+        std::cout << " " << v;
         it++;
     }
 

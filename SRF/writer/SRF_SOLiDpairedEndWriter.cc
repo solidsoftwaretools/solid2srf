@@ -119,6 +119,9 @@ SRF_SOLiDpairedEndWriter::writeNextBlock( void )
         dataSetsFile2.push_back( iDataSetFile2 );
     }
 
+    //fileSet1HasMoreData = dataSetsFile1.size() > 1;
+    //fileSet2HasMoreData = dataSetsFile2.size() > 1;
+
     if ( !identifyNextPairToWrite() )
     {
         // TODO get readId
@@ -166,7 +169,7 @@ bool
 SRF_SOLiDpairedEndWriter::identifyNextPairToWrite( void )
 {
     bool dummyOn1 = FALSE;
-    if ( fileSet1HasMoreData && fileSet2HasMoreData )
+    if ( (dataSetsFile1.size() > 1) && ((dataSetsFile2.size() > 1)) )
     {
         std::string trPartialReadId1 = dataSetsFile1[1].partialReadId;
         size_t found = trPartialReadId1.find( '_' );
@@ -227,13 +230,18 @@ SRF_SOLiDpairedEndWriter::identifyNextPairToWrite( void )
             dummyOn1 = TRUE;
         } 
     }
-    else if ( fileSet1HasMoreData )
+    else if ( dataSetsFile2.size() > 1 )
     {
         dummyOn1 = FALSE;
     }
-    else
+    else if ( dataSetsFile1.size() > 1 )
     {
         dummyOn1 = TRUE;
+    }
+    else
+    {
+        // ERROR - neither file has data - two dummy records
+        return FALSE;
     }
  
     if ( dummyOn1 )

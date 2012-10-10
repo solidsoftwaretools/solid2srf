@@ -63,6 +63,7 @@ main(int argc, char **argv)
 
     std::cerr << "Writing data blocks\n";
     bool allFilesEnd = FALSE; // Assume failure, let success be explicitly set
+
     long int count = 0;
     while ( writer->moreData( allFilesEnd ) )
     {
