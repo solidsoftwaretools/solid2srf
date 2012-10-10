@@ -1,6 +1,9 @@
 #!/usr/bin/python
 
-import sys, os, mmap, re
+import sys
+import os
+#import mmap
+import re
 import time
 import traceback
 
@@ -268,12 +271,11 @@ class ReadFile:
   def getIndex(self):
     # Force it to be loaded or generated
     index = self.index.getIndex()
-
-    if len(index) == 0:
-      #  self.buildIndex()
-      # NB : Must change approach?
-      return None
-
+    #if len(index) == 0:
+    #   self.buildIndex()
+    #   #NB : Must change approach?
+    #  pass
+    #  #return None
     return self.index
 
   def buildIndex(self):
@@ -682,7 +684,7 @@ def getPanelRange(panels, c):
 ##======================================================================
 if __name__ == "__main__":
   from optparse import OptionParser
-  parser = OptionParser();
+  parser = OptionParser(usage="%prog [options] <command> <file(s)>");
   parser.add_option("-v", "--verbose", dest="verbose", action="count",
                     help="Verbose output")
   parser.add_option("-s", "--start", dest="start", type="int",
@@ -698,11 +700,13 @@ if __name__ == "__main__":
 
   (opt, args) = parser.parse_args()
 
-  print args
+  if not args:
+    parser.print_usage(sys.stderr)
+    sys.stderr.write("ERROR: No arguments provided\n")
+    sys.exit(1)
+
   cmd = args.pop(0)
   v = args
-  print cmd
-  print v
 
   print "Action: " + cmd
   if cmd == 'index':
@@ -716,8 +720,9 @@ if __name__ == "__main__":
     doctest.testmod()
   elif cmd == 'split' or cmd == 'chunk':
     if not opt.chunk:
-      sys.stderr.write("Usage: split --chunk=<n>\n")
-      exit(1)
+      parser.print_usage(sys.stderr)
+      sys.stderr.write("Split Command Usage: split --chunk=<n> <filenames>\n")
+      sys.exit(1)
     print cmd + ": chunk size " + str(opt.chunk)
     for f in v:
       if f[-4:] == '.idx':
@@ -726,7 +731,7 @@ if __name__ == "__main__":
         continue
       print cmd + ": " + f
       splitFile(f, chunksize=opt.chunk, start=opt.start, end=opt.end, resume=opt.resume)
-      
+
   elif cmd == 'range':
     startpanel = opt.start
     endpanel = opt.end
